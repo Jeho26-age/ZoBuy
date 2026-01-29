@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="lus">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZoBuy - Mizoram Tan Online Shopping</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Main Container - Fits in one screen */
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header - Compact */
+        .header {
+            background: #FFC107;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            height: 45px;
+            width: auto;
+        }
+
+        .logo-text {
+            font-size: 26px;
+            font-weight: bold;
+            color: #1a1a1a;
+        }
+
+        /* Hero Section - Compact */
+        .hero {
+            padding: 30px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+
+        .hero-logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 5px 15px rgba(255, 193, 7, 0.3));
+        }
+
+        .hero h1 {
+            font-size: 24px;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .highlight {
+            color: #FFC107;
+        }
+
+        .hero p {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        /* Features - Compact Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 0 20px 25px;
+            background: #1a1a1a;
+        }
+
+        .feature-item {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #3d3d3d;
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .feature-item h3 {
+            font-size: 13px;
+            color: #FFC107;
+            margin-bottom: 5px;
+        }
+
+        .feature-item p {
+            font-size: 11px;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        /* Info Section - Compact */
+        .info-section {
+            background: #FFC107;
+            padding: 25px 20px;
+        }
+
+        .info-box {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            color: #FFC107;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .info-box h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .info-box p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+
+        /* Quick Points */
+        .quick-points {
+            background: #2d2d2d;
+            padding: 20px;
+            margin: 0 20px 25px;
+            border-radius: 8px;
+            border-left: 4px solid #FFC107;
+        }
+
+        .quick-points h3 {
+            font-size: 16px;
+            color: #FFC107;
+            margin-bottom: 12px;
+        }
+
+        .point {
+            display: flex;
+            align-items: start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .point-icon {
+            font-size: 16px;
+            margin-top: 2px;
+        }
+
+        .point-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* CTA Button - Prominent */
+        .cta-section {
+            padding: 25px 20px 30px;
+            text-align: center;
+            background: #1a1a1a;
+        }
+
+        .cta-text {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #FFC107;
+            font-weight: bold;
+        }
+
+        .cta-subtext {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        .open-button {
+            display: block;
+            background: #FFC107;
+            color: #1a1a1a;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 5px 20px rgba(255, 193, 7, 0.4);
+            margin: 0 auto;
+            max-width: 280px;
+        }
+
+        .open-button:hover {
+            background: #ffb300;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
+        }
+
+        .open-button:active {
+            transform: translateY(0);
+        }
+
+        /* Footer - Minimal */
+        .footer {
+            background: #0a0a0a;
+            padding: 20px;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            margin-top: auto;
+        }
+
+        .footer-highlight {
+            color: #FFC107;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero, .features, .info-section, .quick-points, .cta-section {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        /* Desktop view adjustments */
+        @media (min-width: 601px) {
+            .main-container {
+                max-width: 500px;
+                margin: 20px auto;
+                box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <header class="header">
+            <img src="logo.png" alt="ZoBuy" class="logo">
+            <span class="logo-text">ZoBuy</span>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <img src="logo.png" alt="ZoBuy Logo" class="hero-logo">
+            <h1>Mizoram Tan <span class="highlight">Online Shopping</span> Platform Hmasa Ber</h1>
+            <p>Mizo in siam, Mizo tan siam. I inah i awm reng maia shopping i ti theih!</p>
+        </section>
+
+        <!-- Features -->
+        <section class="features">
+            <div class="feature-item">
+                <div class="feature-icon">🛍️</div>
+                <h3>Thil Tam Tak</h3>
+                <p>Category hrang hrang atanga thil i duh zawng zawng</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🚚</div>
+                <h3>Thawn Chak</h3>
+                <p>Mizoram pum huapa i in lama kan thlen</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">💳</div>
+                <h3>Payment Awlsam</h3>
+                <p>Online leh Cash on Delivery</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🛡️</div>
+                <h3>Rinawm Tak</h3>
+                <p>I data him takin kan enkawl</p>
+            </div>
+        </section>
+
+        <!-- Info Section -->
+        <section class="info-section">
+            <div class="info-box">
+                <div class="info-label">Kan Thupui</div>
+                <h2>Mizoram Digital Revolution</h2>
+                <p>ZoBuy hi Mizoram tan online shopping platform hmasa ber a ni. Traditional market leh modern technology kan inzawm a, i shopping experience thar kan pe che!</p>
+            </div>
+        </section>
+
+        <!-- Quick Points -->
+        <section class="quick-points">
+            <h3>Engvangin ZoBuy?</h3>
+            <div class="point">
+                <span class="point-icon">✓</span>
+                <span class="point-text">Mizo zahawm takin Mizo hnenah Mizo in kan siam</span>
+            </div>
+            <div class="point">
+                <span class="point-icon">✓</span>
+                <span class="point-text">Mizo tawnga customer service leh support</span>
+            </div>
+            <div class="point">
+                <span class="point-icon">✓</span>
+                <span class="point-text">Quality product leh competitive price</span>
+            </div>
+            <div class="point">
+                <span class="point-icon">✓</span>
+                <span class="point-text">Mizoram digital economy hmasawnna kawng</span>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="cta-section">
+            <div class="cta-text">I Inzawm Taima!</div>
+            <div class="cta-subtext">Shopping revolution ah in tel ve rawh</div>
+            <a href="one-tap.html" class="open-button">Tan Rawh Le</a>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><span class="footer-highlight">ZoBuy</span> - Mizoram Tan Online Shopping Platform Hmasa Ber</p>
+            <p>Mizo In Siam | Mizo Tan Siam</p>
+        </footer>
+    </div>
+</body>
+</html>
