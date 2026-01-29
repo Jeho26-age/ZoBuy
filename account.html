@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zobuy - Account</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --zobuy-green: #1a4d2e;
+            --light-green: #e8f5e9;
+            --bg: #f8f9fa;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: #333;
+            padding-bottom: 90px;
+        }
+
+        /* --- MODERN HEADER --- */
+        .header-gradient {
+            background: linear-gradient(135deg, var(--zobuy-green) 0%, #2d7a4a 100%);
+            height: 180px;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: white;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--zobuy-green);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+        }
+
+        .user-name { font-size: 20px; font-weight: 600; margin: 0; }
+        .user-phone { font-size: 14px; opacity: 0.9; }
+
+        /* --- CONTENT WRAPPER --- */
+        .container {
+            padding: 0 15px;
+            margin-top: -30px; /* Pulls content up over the green background */
+        }
+
+        /* --- SELLER HUB (PROMINENT) --- */
+        .seller-hub {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .hub-text h3 { margin: 0; color: var(--zobuy-green); font-size: 18px; }
+        .hub-text p { margin: 5px 0 0; font-size: 12px; color: #777; }
+
+        .hub-buttons { display: flex; gap: 10px; }
+        
+        .hub-btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .btn-my-store { background: var(--zobuy-green); color: white; }
+        .btn-sell { border: 2px solid var(--zobuy-green); color: var(--zobuy-green); }
+
+        /* --- ACTION GRID --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .menu-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 18px;
+            text-align: center;
+            text-decoration: none;
+            color: #444;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+            transition: 0.3s;
+        }
+
+        .menu-card:active { transform: scale(0.95); }
+        .menu-card i {
+            display: block;
+            font-size: 24px;
+            color: var(--zobuy-green);
+            margin-bottom: 10px;
+        }
+        .menu-card span { font-size: 14px; font-weight: 500; }
+
+        /* --- LOGOUT --- */
+        .logout-link {
+            display: block;
+            text-align: center;
+            color: #d9534f;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* --- BOTTOM NAV --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--zobuy-green);
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-btn {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            text-align: center;
+            font-size: 11px;
+            flex: 1;
+        }
+
+        .nav-btn i { display: block; font-size: 22px; margin-bottom: 4px; }
+        .nav-btn.active { color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="header-gradient">
+        <div class="avatar-circle">Z</div>
+        <h2 class="user-name">Zobuy User</h2>
+        <span class="user-phone">+91 9876543210</span>
+    </div>
+
+    <div class="container">
+        <div class="seller-hub">
+            <div class="hub-text">
+                <h3>Seller Hub</h3>
+                <p>Manage your business</p>
+            </div>
+            <div class="hub-buttons">
+                <a href="store.html" class="hub-btn btn-my-store">My Store</a>
+                <a href="sell.html" class="hub-btn btn-sell">Sell Item</a>
+            </div>
+        </div>
+
+        <div class="menu-grid">
+            <a href="orders.html" class="menu-card">
+                <i class="fas fa-shopping-bag"></i>
+                <span>My Orders</span>
+            </a>
+            <a href="wishlist.html" class="menu-card">
+                <i class="fas fa-heart"></i>
+                <span>Wishlist</span>
+            </a>
+            <a href="edit-profile.html" class="menu-card">
+                <i class="fas fa-user-edit"></i>
+                <span>Edit Profile</span>
+            </a>
+            <a href="address.html" class="menu-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Addresses</span>
+            </a>
+            <a href="language.html" class="menu-card">
+                <i class="fas fa-globe"></i>
+                <span>Language</span>
+            </a>
+            <a href="help.html" class="menu-card">
+                <i class="fas fa-info-circle"></i>
+                <span>Support</span>
+            </a>
+        </div>
+
+        <a href="signin.html" class="logout-link">Log Out</a>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="homepage.html" class="nav-btn">
+            <i class="fa fa-home"></i>
+            Home
+        </a>
+        <a href="categories.html" class="nav-btn">
+            <i class="fa fa-th-large"></i>
+            Categories
+        </a>
+        <a href="account.html" class="nav-btn active">
+            <i class="fa fa-user-circle"></i>
+            Account
+        </a>
+        <a href="cart.html" class="nav-btn">
+            <i class="fa fa-shopping-cart"></i>
+            Cart
+        </a>
+    </nav>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script src="config.js"></script>
+
+<script>
+  // Quick test to see if everything is working
+  console.log("ZoBuy System: Page successfully connected to config.js");
+</script>
+
+</body>
+</html>

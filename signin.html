@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zobuy - Sign In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* CSS STYLES */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000000; /* Pure black background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Moves the box towards the top */
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 50px;
+        }
+
+        .signin-container {
+            background: white; /* White rectangular box */
+            padding: 40px 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px; /* Standard size for mobile/desktop */
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-area {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 300px; /* Adjusted so it stays centered and large */
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .tagline {
+            color: #555;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        form {
+            width: 100%;
+        }
+
+        .input-group {
+            width: 100%;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        /* Password Wrapper for Eye Icon */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #777;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        /* Error Notification */
+        #error-popup {
+            color: #d71920;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 5px;
+            display: none; /* Hidden by default */
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #1a4d2e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #143d24;
+        }
+
+        .auth-links {
+            margin-top: 25px;
+            width: 100%;
+        }
+
+        .create-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: #f4f4f4;
+            color: #1a4d2e;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .forgot-password {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signin-container">
+        <div class="logo-area">
+            <img src="logo.png" alt="Zobuy Logo" class="logo">
+            <p class="tagline">Mizoram Online Shopping Center</p>
+        </div>
+
+        <form id="signinForm" action="homepage.html" method="GET">
+            <div class="input-group">
+                <input type="text" id="userEmail" placeholder="Gmail or Phone Number" required>
+            </div>
+            
+            <div class="input-group password-wrapper">
+                <input type="password" id="password" placeholder="Password" required>
+                <i class="far fa-eye" id="togglePassword"></i>
+                <div id="error-popup">Wrong password</div>
+            </div>
+
+            <button type="submit" class="login-btn">Login</button>
+        </form>
+
+        <div class="auth-links">
+            <a href="createaccount.html" class="create-btn">Create an account</a>
+            
+            <a href="resetpassword.html" class="forgot-password">Forgot Password?</a>
+        </div>
+    </div>
+
+    <script>
+        // JAVASCRIPT LOGIC
+        
+        // 1. Toggle Password Visibility
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordField = document.querySelector('#password');
+
+        togglePassword.addEventListener('click', function () {
+            // switch between password and text
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            // toggle eye icon
+            this.classList.toggle('fa-eye-slash');
+        });
+
+        // 2. Error Notification Logic
+        const signinForm = document.getElementById('signinForm');
+        const errorPopup = document.getElementById('error-popup');
+
+        signinForm.addEventListener('submit', function(e) {
+            const passValue = passwordField.value;
+
+            // Demo logic: If password is "wrong", show red text
+            if (passValue === "wrong") {
+                e.preventDefault(); // Stop from going to homepage.html
+                errorPopup.style.display = 'block';
+            }
+        });
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script src="config.js"></script>
+
+<script>
+  // Quick test to see if everything is working
+  console.log("ZoBuy System: Page successfully connected to config.js");
+</script>
+
+</body>
+</html>
