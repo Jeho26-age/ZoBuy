@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZoBuy | Quick Sign-In</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-img {
+            width: 120px; /* Adjust as needed */
+            height: auto;
+        }
+        .status-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <img src="logo.png" alt="ZoBuy Logo" class="logo-img">
+        <div class="status-text">Choose an account to continue</div>
+    </div>
+
+    <div id="g_id_onload"
+         data-client_id=480926307536-g906j186hs4vjtd39gkh24oil100v7rq.apps.googleusercontent.com
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="true"
+         data-auto_select="false"> </div>
+
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="config.js"></script>
+
+    <script>
+        function handleCredentialResponse(response) {
+            // This is the ID token Google sends back
+            const idToken = response.credential;
+            const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+
+            // Sign in to Firebase using the Google account selected
+            firebase.auth().signInWithCredential(credential)
+                .then((result) => {
+                    console.log("Verified:", result.user.displayName);
+                    // SUCCESS: Send them straight to the shop
+                    window.location.href = "homepage.html"; 
+                })
+                .catch((error) => {
+                    console.error("Login Error:", error);
+                    alert("Something went wrong. Please try again.");
+                });
+        }
+
+        // Redirect if user is already logged in
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = "homepage.html";
+            }
+        });
+    </script>
+</body>
+</html>

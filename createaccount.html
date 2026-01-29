@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,6 +34,7 @@
 
         .input-group {
             margin-bottom: 1.2rem;
+            position: relative;
         }
 
         .input-group label {
@@ -52,10 +54,13 @@
             font-size: 1rem;
         }
 
-        .input-group input:focus {
-            outline: none;
-            border-color: #1877f2;
-            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+        /* Eye Icon Positioning */
+        .input-group i {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            cursor: pointer;
+            color: #777;
         }
 
         .signup-button {
@@ -74,47 +79,140 @@
         .signup-button:hover {
             background-color: #008a00;
         }
+
+        /* OTP Section (Amazon-style Verification Page) */
+        #otp-section {
+            display: none;
+            text-align: left;
+        }
+
+        .otp-header {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .otp-subtext {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        #recaptcha-container {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="signup-container">
-    <h2>Create Account</h2>
-    <form action="/register" method="POST">
-        <div class="input-group">
-            <label for="identifier">Email or Phone Number</label>
-            <input type="text" id="identifier" name="identifier" required>
-        </div>
+    <div id="registration-view">
+        <h2>Create Account</h2>
+        <form id="registrationForm">
+            <div class="input-group">
+                <label for="username">Your name</label>
+                <input type="text" id="username" placeholder="First and last name" required>
+            </div>
 
-        <div class="input-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required>
-        </div>
+            <div class="input-group">
+                <label for="identifier">Mobile number or email</label>
+                <input type="text" id="identifier" placeholder="+91..." required>
+            </div>
 
-        <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required>
-        </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="At least 6 characters" required>
+                <i class="far fa-eye" id="togglePass"></i>
+            </div>
 
-        <div class="input-group">
-            <label for="confirm_password">Confirm Password</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-        </div>
+            <div class="input-group">
+                <label for="confirm_password">Re-enter password</label>
+                <input type="password" id="confirm_password" required>
+                <i class="far fa-eye" id="toggleConfirm"></i>
+            </div>
 
-        <button type="submit" class="signup-button">Sign Up</button>
-    </form>
+            <div id="recaptcha-container"></div>
+
+            <button type="submit" id="signupBtn" class="signup-button">Verify mobile number</button>
+        </form>
+    </div>
+
+    <div id="otp-section">
+        <div class="otp-header">Verify mobile number</div>
+        <p class="otp-subtext">A text with a One-Time Password (OTP) has been sent to your number.</p>
+        
+        <div class="input-group">
+            <label for="otp">Enter OTP</label>
+            <input type="text" id="otp" placeholder="123456" required>
+        </div>
+        
+        <button type="button" id="verifyBtn" class="signup-button" style="background-color: #f0c14b; color: #111; border: 1px solid #a88734;">Create your ZoBuy account</button>
+        
+        <p style="font-size: 0.8rem; margin-top: 15px; color: #0066c0; cursor: pointer;" onclick="location.reload()">Resend OTP</p>
+    </div>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <script src="config.js"></script>
 
 <script>
-  // Quick test to see if everything is working
-  console.log("ZoBuy System: Page successfully connected to config.js");
-</script>
+    // 1. Password Toggles
+    function setupToggle(iconId, inputId) {
+        const icon = document.getElementById(iconId);
+        const input = document.getElementById(inputId);
+        icon.addEventListener('click', () => {
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            icon.classList.toggle('fa-eye-slash');
+        });
+    }
+    setupToggle('togglePass', 'password');
+    setupToggle('toggleConfirm', 'confirm_password');
 
+    // 2. Firebase Phone Auth Setup
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'normal'
+    });
+
+    let confirmationResult;
+    const regView = document.getElementById('registration-view');
+    const otpSection = document.getElementById('otp-section');
+
+    // 3. Submit Form -> Send OTP
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Password Match Validation
+        if(document.getElementById('password').value !== document.getElementById('confirm_password').value) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        const phoneNumber = document.getElementById('identifier').value;
+        const appVerifier = window.recaptchaVerifier;
+
+        firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
+            .then((result) => {
+                confirmationResult = result;
+                // Transition to OTP view
+                regView.style.display = 'none';
+                otpSection.style.display = 'block';
+            }).catch((error) => {
+                alert("Error: " + error.message);
+            });
+    });
+
+    // 4. Verify OTP -> Finish
+    document.getElementById('verifyBtn').addEventListener('click', function() {
+        const code = document.getElementById('otp').value;
+        confirmationResult.confirm(code).then(() => {
+            alert("Welcome to ZoBuy!");
+            window.history.back(); // Return to previous page
+        }).catch(() => {
+            alert("The OTP entered is incorrect.");
+        });
+    });
+</script>
 </body>
 </html>
