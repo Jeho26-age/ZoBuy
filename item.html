@@ -196,7 +196,7 @@
                             <input type="text" id="prod-price" placeholder="0.00" class="input-pro">
                         </div>
                         <div>
-                            <label class="field-label">Discount (%)</label>
+                            <label class="field-label">Amount to Discount (₹)</label>
                             <input type="text" id="prod-discount" placeholder="0" class="input-pro">
                         </div>
                     </div>
@@ -330,9 +330,11 @@
             btn.disabled = true;
 
             try {
-                const basePrice = parseFloat(document.getElementById('prod-price').value);
-                const discPercent = parseFloat(document.getElementById('prod-discount').value || 0);
-                const finalPrice = Math.round(basePrice - (basePrice * (discPercent / 100)));
+                // --- NEW SUBTRACTION MATH ---
+const basePrice = parseFloat(document.getElementById('prod-price').value); // e.g., 4000
+const discAmount = parseFloat(document.getElementById('prod-discount').value || 0); // e.g., 300
+const finalPrice = basePrice - discAmount; // Result: 3700
+
 
                 const specs = {};
                 document.querySelectorAll('.spec-item').forEach(item => {

@@ -55,8 +55,50 @@
         .product-brand { font-weight: 700; font-size: 14px; color: #333; }
         .product-name { color: #777; font-size: 12px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .price-container { display: flex; align-items: center; gap: 6px; }
-        .new-price { color: #000; font-weight: 700; font-size: 15px; }
-        .old-price { color: #bbb; text-decoration: line-through; font-size: 12px; }
+/* Keep current price Black as requested */
+.new-price { 
+    color: #ff5252;              /* Change this to Black */
+    font-weight: 700; 
+    font-size: 15px; 
+}
+
+/* Make only the discount price and the cut-line Red */
+.old-price { 
+    color: #000;             /* Change this to Red */
+    text-decoration: line-through; 
+    text-decoration-color: #ff5252; /* Ensures the 'cut line' is Red */
+    font-size: 12px; 
+}
+
+.discount-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff5252;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 5px 10px 5px 15px;
+    /* This creates the tag shape */
+    clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 15% 50%, 0% 0%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+}
+
+/* This creates the 'hole' in the tag */
+.discount-tag::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+}
+
 
         /* Nav Styles */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 2000; }

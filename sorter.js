@@ -86,15 +86,22 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
     }
 });
 
-// --- 4. WISHLIST & CLICK VIEW ---
+// --- 4. WISHLIST & CLICK VIEW (Updated for Dynamic Tags) ---
 function buildCard(p) {
     const wishlist = JSON.parse(localStorage.getItem('myWishlist') || '[]');
     const isLiked = wishlist.includes(p.id) ? 'active' : '';
 
+    // --- NEW: Calculate the real percentage for your tag design ---
+    let discountBadge = '';
+    if (p.oldPrice && p.oldPrice > p.price) {
+        const percent = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
+        discountBadge = `<div class="discount-tag">${percent}% OFF</div>`;
+    }
+
     return `
         <div class="product-card">
             <div class="product-image">
-                ${p.oldPrice ? `<div class="discount-tag">OFF</div>` : ''}
+                ${discountBadge} 
                 <div class="wishlist-btn ${isLiked}" onclick="toggleWishlist(event, '${p.id}')">
                     <i class="fa fa-heart"></i>
                 </div>
@@ -104,8 +111,8 @@ function buildCard(p) {
                 <div class="product-brand">${p.categoryPath}</div>
                 <div class="product-name">${p.name}</div>
                 <div class="price-container">
-                    ${p.oldPrice ? `<span class="old-price">₹${p.oldPrice}</span>` : ''}
                     <span class="new-price">₹${p.price}</span>
+                    ${p.oldPrice ? `<span class="old-price">₹${p.oldPrice}</span>` : ''}
                 </div>
             </div>
         </div>`;
