@@ -196,8 +196,8 @@
                             <input type="text" id="prod-price" placeholder="0.00" class="input-pro">
                         </div>
                         <div>
-                            <label class="field-label">Amount to Discount (₹)</label>
-                            <input type="text" id="prod-discount" placeholder="0" class="input-pro">
+                            <label class="field-label">Discount Amount (₹)</label>
+                            <input type="text" id="prod-discount" placeholder="e.g. 300" class="input-pro">
                         </div>
                     </div>
                 </div>
@@ -224,8 +224,6 @@
     <script src="config.js"></script>
 
     <script>
-        // We use the 'db' variable already declared inside your config.js
-        
         const catalog = {
             'Electronics': {
                 img: 'electronics.jpg', 
@@ -258,6 +256,7 @@
 
         function init() {
             const grid = document.getElementById('macro-grid');
+            if(!grid) return;
             grid.innerHTML = '';
             for (let m in catalog) {
                 grid.innerHTML += `
@@ -330,11 +329,11 @@
             btn.disabled = true;
 
             try {
-                // --- NEW SUBTRACTION MATH ---
-const basePrice = parseFloat(document.getElementById('prod-price').value); // e.g., 4000
-const discAmount = parseFloat(document.getElementById('prod-discount').value || 0); // e.g., 300
-const finalPrice = basePrice - discAmount; // Result: 3700)));
-
+                const basePrice = parseFloat(document.getElementById('prod-price').value || 0);
+                const discAmount = parseFloat(document.getElementById('prod-discount').value || 0);
+                
+                // --- FIXED SUBTRACTION MATH ---
+                const finalPrice = basePrice - discAmount;
 
                 const specs = {};
                 document.querySelectorAll('.spec-item').forEach(item => {
@@ -343,11 +342,10 @@ const finalPrice = basePrice - discAmount; // Result: 3700)));
                     if(key) specs[key] = val;
                 });
 
-                // Sending to Firestore (NOT database())
                 await db.collection("products").add({
                     name: document.getElementById('prod-name').value,
                     price: finalPrice,
-                    oldPrice: discPercent > 0 ? basePrice : null,
+                    oldPrice: discAmount > 0 ? basePrice : null,
                     imageURL: productMedia || "placeholder.jpg",
                     categoryPath: selectedPath,
                     description: document.getElementById('prod-desc').value,
@@ -357,11 +355,11 @@ const finalPrice = basePrice - discAmount; // Result: 3700)));
                 });
 
                 alert('PRODUCT SUCCESSFULLY SYNCED TO STOREFRONT');
-                window.location.href = 'index.html';
+                window.location.href = 'homepage.html';
 
             } catch (err) {
-                console.error(err);
-                alert("Upload failed. Check console.");
+                console.error("Firebase Error:", err);
+                alert("Upload failed. Check console for specific error.");
                 btn.disabled = false;
                 btn.innerText = "Deploy Product to Store";
             }
@@ -369,6 +367,5 @@ const finalPrice = basePrice - discAmount; // Result: 3700)));
 
         window.onload = init;
     </script>
-
 </body>
 </html>
