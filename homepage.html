@@ -7,116 +7,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* --- KEEPING YOUR EXACT DESIGN --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: #fcfcfc; padding-bottom: 100px; }
 
-        /* --- HEADER FIX --- */
         header { 
-            padding: 10px 15px; 
-            display: flex; 
-            align-items: center; /* Vertically centers logo and search bar */
-            gap: 15px; 
-            background: white; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
-            border-bottom: 1px solid #eee;
-            height: 70px; 
+            padding: 10px 15px; display: flex; align-items: center; gap: 15px; 
+            background: white; position: sticky; top: 0; z-index: 1000; 
+            border-bottom: 1px solid #eee; height: 70px; 
         }
 
-        .logo-small { 
-            width: 75px; /* Your desired size */
-            height: auto; 
-            max-height: 55px; 
-            object-fit: contain;
-        }
-
-        .search-container { 
-            flex: 1; 
-            position: relative; 
-            display: flex;
-            align-items: center;
-        }
-
+        .logo-small { width: 75px; height: auto; max-height: 55px; object-fit: contain; }
+        .search-container { flex: 1; position: relative; display: flex; align-items: center; }
         .search-container input { 
-            width: 100%; 
-            padding: 12px 15px 12px 45px; 
-            border-radius: 25px; 
-            border: 1px solid #e0e0e0; 
-            background: #f5f5f5; 
-            font-size: 14px; 
+            width: 100%; padding: 12px 15px 12px 45px; border-radius: 25px; 
+            border: 1px solid #e0e0e0; background: #f5f5f5; font-size: 14px; 
         }
-
         .search-container i { position: absolute; left: 18px; color: #888; }
 
-        /* --- FEATURED BANNER (PAID PROMOTION) --- */
+        /* Banner Styles */
         .banner-wrapper { width: 100%; overflow: hidden; padding: 15px 0; }
         .banner-container { display: flex; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x mandatory; gap: 12px; padding: 0 15px; }
         .banner-container::-webkit-scrollbar { display: none; }
-        
-        .banner { 
-            min-width: 100%; 
-            height: 180px; 
-            border-radius: 20px; 
-            scroll-snap-align: center; 
-            position: relative; 
-            overflow: hidden; /* Clips image to corners */
-            display: flex;
-            background: #333;
-        }
+        .banner { min-width: 100%; height: 180px; border-radius: 20px; scroll-snap-align: center; position: relative; overflow: hidden; display: flex; background: #333; }
+        .banner img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
+        .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.7), transparent); z-index: 2; padding: 25px; display: flex; flex-direction: column; justify-content: center; color: white; }
+        .promo-badge { position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.3); backdrop-filter: blur(5px); padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 700; z-index: 3; }
 
-        .banner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* MAKES IMAGE FIT PERFECTLY */
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
-
-        .banner-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(0,0,0,0.7), transparent);
-            z-index: 2;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            color: white;
-        }
-
-        .promo-badge { 
-            position: absolute; 
-            top: 15px; 
-            right: 20px; 
-            background: rgba(255,255,255,0.3); 
-            backdrop-filter: blur(5px);
-            padding: 4px 10px; 
-            border-radius: 5px; 
-            font-size: 10px; 
-            font-weight: 700; 
-            z-index: 3;
-        }
-
-        /* --- GRID SECTIONS --- */
+        /* Grid Styles */
         .section-title { padding: 25px 15px 12px 15px; font-size: 19px; font-weight: 700; color: #1a1a1a; }
         .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; }
         
         .product-card { background: white; border-radius: 15px; border: 1px solid #f0f0f0; overflow: hidden; position: relative; }
-        .product-image { background: #f9f9f9; height: 160px; display: flex; align-items: center; justify-content: center; }
+        .product-image { background: #f9f9f9; height: 160px; display: flex; align-items: center; justify-content: center; position: relative; }
         .product-image img { max-width: 75%; max-height: 75%; object-fit: contain; }
         
-        .discount-tag { 
-            position: absolute; top: 10px; left: 10px; 
-            background: #ff5252; color: white; font-size: 10px; 
-            padding: 3px 8px; border-radius: 6px; font-weight: 700; 
+        /* #2: HEART BUTTON DESIGN */
+        .wishlist-btn {
+            position: absolute; top: 10px; right: 10px; z-index: 10;
+            background: white; width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #ccc; transition: 0.3s;
         }
+        .wishlist-btn.active { color: #ff5252; }
 
+        .discount-tag { position: absolute; top: 10px; left: 10px; background: #ff5252; color: white; font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 700; z-index: 5; }
         .product-info { padding: 12px; }
         .product-brand { font-weight: 700; font-size: 14px; color: #333; }
         .product-name { color: #777; font-size: 12px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -124,11 +59,14 @@
         .new-price { color: #000; font-weight: 700; font-size: 15px; }
         .old-price { color: #bbb; text-decoration: line-through; font-size: 12px; }
 
-        /* --- BOTTOM NAV --- */
+        /* Nav Styles */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 2000; }
         .nav-item { text-align: center; color: #888; text-decoration: none; font-size: 11px; flex: 1; }
         .nav-item i { font-size: 22px; display: block; margin-bottom: 3px; }
         .nav-item.active { color: #ffca28; }
+
+        /* Helper to hide empty sections */
+        .hidden-section { display: none; }
     </style>
 </head>
 <body>
@@ -137,93 +75,39 @@
         <img src="logo.png" alt="Zobuy" class="logo-small">
         <div class="search-container">
             <i class="fa fa-search"></i>
-            <input type="text" placeholder="Search Zobuy">
+            <input type="text" id="searchInput" placeholder="Search Zobuy">
         </div>
     </header>
 
-    <div class="banner-wrapper">
+    <div class="banner-wrapper" id="banner-section">
         <div class="banner-container" id="promoBanner">
-            <div class="banner">
-                <img src="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?q=80&w=800" alt="Men's Collection">
-                <div class="banner-overlay">
-                    <div class="promo-badge">SPONSORED</div>
-                    <h2>40% OFF</h2>
-                    <p>Men's Collection</p>
-                </div>
             </div>
-            <div class="banner">
-                <img src="https://images.unsplash.com/photo-1556656793-062ff98782ee?q=80&w=800" alt="Tech">
-                <div class="banner-overlay">
-                    <div class="promo-badge">FEATURED</div>
-                    <h2>IPHONE 15</h2>
-                    <p>Upgrade Your Style</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div id="main-content">
-        <div class="section-title">For You</div>
-        <div class="product-grid" id="foryou-grid">
-            <div class="product-card">
-                <div class="product-image"><img src="watch.jpg"></div>
-                <div class="product-info">
-                    <div class="product-brand">Titan</div><div class="product-name">Neo Splash</div>
-                    <div class="price-container"><span class="new-price">₹5,200</span></div>
-                </div>
-            </div>
-            <div class="product-card">
-                <div class="product-image"><img src="earbud.jpg"></div>
-                <div class="product-info">
-                    <div class="product-brand">CMF</div><div class="product-name">Buds Pro 2</div>
-                    <div class="price-container"><span class="new-price">₹3,399</span></div>
-                </div>
-            </div>
+        <div id="foryou-container" class="hidden-section">
+            <div class="section-title">For You</div>
+            <div class="product-grid" id="foryou-grid"></div>
         </div>
 
-        <div class="section-title">New Arrival</div>
-        <div class="product-grid" id="new-grid">
-            <div class="product-card">
-                <div class="product-image"><img src="bag.jpg"></div>
-                <div class="product-info">
-                    <div class="product-brand">Skybag</div><div class="product-name">Neon Backpack</div>
-                    <div class="price-container"><span class="new-price">₹1,800</span></div>
-                </div>
-            </div>
+        <div id="new-container" class="hidden-section">
+            <div class="section-title">New Arrival</div>
+            <div class="product-grid" id="new-grid"></div>
         </div>
 
-        <div class="section-title">Best Discount</div>
-        <div class="product-grid" id="discount-grid">
-            <div class="product-card">
-                <div class="discount-tag">70% OFF</div>
-                <div class="product-image"><img src="shirt.jpg"></div>
-                <div class="product-info">
-                    <div class="product-brand">Zara</div><div class="product-name">Linen Blend Shirt</div>
-                    <div class="price-container"><span class="old-price">₹2,999</span><span class="new-price">₹899</span></div>
-                </div>
-            </div>
+        <div id="discount-container" class="hidden-section">
+            <div class="section-title">Best Discount</div>
+            <div class="product-grid" id="discount-grid"></div>
         </div>
 
-        <div class="section-title">Trending This Week</div>
-        <div class="product-grid" id="trending-grid">
-            <div class="product-card">
-                <div class="product-image"><img src="laptop.jpg"></div>
-                <div class="product-info">
-                    <div class="product-brand">Apple</div><div class="product-name">MacBook M2 13"</div>
-                    <div class="price-container"><span class="new-price">₹89,900</span></div>
-                </div>
-            </div>
+        <div id="trending-container" class="hidden-section">
+            <div class="section-title">Trending This Week</div>
+            <div class="product-grid" id="trending-grid"></div>
         </div>
 
-        <div class="section-title">Best Sell</div>
-        <div class="product-grid" id="best-grid">
-            <div class="product-card">
-                <div class="product-image"><img src="earphone.jpg"></div>
-                <div class="product-info">
-                    <div class="product-brand">Nothing</div><div class="product-name">Ear (a) Black</div>
-                    <div class="price-container"><span class="new-price">₹7,999</span></div>
-                </div>
-            </div>
+        <div id="best-container" class="hidden-section">
+            <div class="section-title">Best Sell</div>
+            <div class="product-grid" id="best-grid"></div>
         </div>
     </div>
 
@@ -236,64 +120,10 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
     <script src="config.js"></script>
 
-    <script>
-        const db = firebase.firestore();
+    <script src="sorter.js"></script>
 
-        // Banner Auto-Swipe (Every 4 seconds)
-        const bannerContainer = document.getElementById('promoBanner');
-        let scrollAmount = 0;
-        setInterval(() => {
-            const maxScroll = bannerContainer.scrollWidth - bannerContainer.clientWidth;
-            scrollAmount = (scrollAmount >= maxScroll - 5) ? 0 : scrollAmount + bannerContainer.clientWidth + 12;
-            bannerContainer.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-        }, 4000);
-
-        // Build Card HTML
-        function buildCard(p) {
-            return `
-                <div class="product-card">
-                    ${p.discount ? `<div class="discount-tag">${p.discount}% OFF</div>` : ''}
-                    <div class="product-image"><img src="${p.imageURL || 'placeholder.jpg'}"></div>
-                    <div class="product-info">
-                        <div class="product-brand">${p.brand}</div><div class="product-name">${p.name}</div>
-                        <div class="price-container">
-                            ${p.oldPrice ? `<span class="old-price">₹${p.oldPrice}</span>` : ''}
-                            <span class="new-price">₹${p.price}</span>
-                        </div>
-                    </div>
-                </div>`;
-        }
-
-        // Live Firestore Data Listener
-        db.collection("products").onSnapshot((snapshot) => {
-            if (!snapshot.empty) {
-                const mainContent = document.getElementById("main-content");
-                mainContent.innerHTML = ''; 
-
-                const sections = [
-                    { id: 'foryou', title: 'For You' },
-                    { id: 'new', title: 'New Arrival' },
-                    { id: 'discount', title: 'Best Discount' },
-                    { id: 'trending', title: 'Trending This Week' },
-                    { id: 'best', title: 'Best Sell' }
-                ];
-
-                sections.forEach(s => {
-                    mainContent.innerHTML += `<div class="section-title">${s.title}</div><div class="product-grid" id="${s.id}-grid"></div>`;
-                });
-
-                snapshot.forEach(doc => {
-                    const p = doc.data();
-                    const card = buildCard(p);
-                    
-                    if (p.section === "new") document.getElementById('new-grid').innerHTML += card;
-                    if (p.discount >= 50) document.getElementById('discount-grid').innerHTML += card;
-                    // Additional logic for Trending and Best Sell based on sales counts...
-                });
-            }
-        });
-    </script>
 </body>
 </html>
