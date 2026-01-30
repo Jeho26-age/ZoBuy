@@ -1,20 +1,20 @@
 /**
- * ZoBuy Sorter Engine - V2 (Full Feature Integration)
- * Requirements: Search, Wishlist + Seller Tracking, Item-View Redirection.
+ * ZoBuy Sorter Engine - V2 (Corrected)
  */
 
-const db = firebase.firestore();
-let allProducts = []; // Stores products for instant search
+// Removed duplicate 'db' declaration to prevent crash
+
+let allProducts = []; 
 
 // --- 1. THE MAIN LISTENER ---
 db.collection("products").orderBy("serialNumber", "desc").onSnapshot((snapshot) => {
-    allProducts = []; // Reset local storage
+    allProducts = []; 
     snapshot.forEach(doc => {
         const data = doc.data();
-        data.id = doc.id; // Add Firebase ID for wishlist tracking
+        data.id = doc.id; 
         allProducts.push(data);
     });
-    renderHome(allProducts); // Initial Render
+    renderHome(allProducts); 
 });
 
 // --- 2. THE RENDER ENGINE ---
@@ -27,7 +27,6 @@ function renderHome(products) {
         foryou: { grid: document.getElementById('foryou-grid'), container: document.getElementById('foryou-container') }
     };
 
-    // Clear and Hide everything initially
     Object.values(sections).forEach(s => {
         if(s.grid) s.grid.innerHTML = '';
         if(s.container) s.container.classList.add('hidden-section');
@@ -39,24 +38,20 @@ function renderHome(products) {
     products.forEach(p => {
         const cardHTML = buildCard(p);
         
-        // FEATURED BANNER
         if (p.isFeatured && bannerBox) {
             renderBanner(p, bannerBox);
         }
 
-        // NEW ARRIVAL (Always shows if products exist)
         if (sections.new.grid) {
             sections.new.grid.innerHTML += cardHTML;
             sections.new.container.classList.remove('hidden-section');
         }
 
-        // DISCOUNT LOGIC
         if (p.oldPrice > p.price && sections.discount.grid) {
             sections.discount.grid.innerHTML += cardHTML;
             sections.discount.container.classList.remove('hidden-section');
         }
 
-        // TRENDING & BEST SELL (Manual Tags)
         if (p.sectionTag === "trending" && sections.trending.grid) {
             sections.trending.grid.innerHTML += cardHTML;
             sections.trending.container.classList.remove('hidden-section');
@@ -66,7 +61,6 @@ function renderHome(products) {
             sections.best.container.classList.remove('hidden-section');
         }
 
-        // FOR YOU (Category Interest)
         const interest = localStorage.getItem('userInterest');
         if (interest && p.categoryPath === interest && sections.foryou.grid) {
             sections.foryou.grid.innerHTML += cardHTML;
@@ -75,27 +69,25 @@ function renderHome(products) {
     });
 }
 
-// --- 3. #1: SEARCH BAR LOGIC ---
+// --- 3. SEARCH BAR LOGIC ---
 document.getElementById('searchInput').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase();
     const banner = document.getElementById('banner-section');
     
     if (query.length > 0) {
-        if(banner) banner.style.display = 'none'; // Hide banner during search
+        if(banner) banner.style.display = 'none'; 
         const filtered = allProducts.filter(p => 
-            p.name.toLowerCase().includes(query) || 
-            p.brand.toLowerCase().includes(query)
+            p.name.toLowerCase().includes(query)
         );
         renderHome(filtered);
     } else {
-        if(banner) banner.style.display = 'block'; // Show banner when search cleared
+        if(banner) banner.style.display = 'block'; 
         renderHome(allProducts);
     }
 });
 
-// --- 4. #2: WISHLIST (HEART) & #4: CLICK VIEW ---
+// --- 4. WISHLIST & CLICK VIEW ---
 function buildCard(p) {
-    // Check if this item is already in user's wishlist (locally)
     const wishlist = JSON.parse(localStorage.getItem('myWishlist') || '[]');
     const isLiked = wishlist.includes(p.id) ? 'active' : '';
 
@@ -109,7 +101,7 @@ function buildCard(p) {
                 <img src="${p.imageURL}" onclick="viewProduct('${p.id}', '${p.categoryPath}')">
             </div>
             <div class="product-info" onclick="viewProduct('${p.id}', '${p.categoryPath}')">
-                <div class="product-brand">${p.brand}</div>
+                <div class="product-brand">${p.categoryPath}</div>
                 <div class="product-name">${p.name}</div>
                 <div class="price-container">
                     ${p.oldPrice ? `<span class="old-price">₹${p.oldPrice}</span>` : ''}
@@ -119,25 +111,20 @@ function buildCard(p) {
         </div>`;
 }
 
-// #2: Heart Toggle & Seller Data Tracking
 function toggleWishlist(event, productId) {
-    event.stopPropagation(); // Prevents clicking the whole card
+    event.stopPropagation(); 
     let wishlist = JSON.parse(localStorage.getItem('myWishlist') || '[]');
     const btn = event.currentTarget;
 
     if (!wishlist.includes(productId)) {
-        // ADD TO WISHLIST
         wishlist.push(productId);
         btn.classList.add('active');
-        // Update Seller Data in Firebase (+1 Heart)
         db.collection("products").doc(productId).update({
             wishlistCount: firebase.firestore.FieldValue.increment(1)
         });
     } else {
-        // REMOVE FROM WISHLIST
         wishlist = wishlist.filter(id => id !== productId);
         btn.classList.remove('active');
-        // Update Seller Data (-1 Heart)
         db.collection("products").doc(productId).update({
             wishlistCount: firebase.firestore.FieldValue.increment(-1)
         });
@@ -145,13 +132,11 @@ function toggleWishlist(event, productId) {
     localStorage.setItem('myWishlist', JSON.stringify(wishlist));
 }
 
-// #4: View Product Redirection
 function viewProduct(id, category) {
-    localStorage.setItem('userInterest', category); // Save interest for "For You"
+    localStorage.setItem('userInterest', category); 
     window.location.href = `item-view.html?id=${id}`;
 }
 
-// Banner Helper
 function renderBanner(p, container) {
     const slide = document.createElement('div');
     slide.className = 'banner';
