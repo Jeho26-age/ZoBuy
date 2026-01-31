@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Asset Intake | Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; margin: 0; padding: 0; }
+        .glass-header { background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #1a1a1a; }
+        
+        .preview-hero { width: 100%; height: 350px; background: #0a0a0a; position: relative; overflow: hidden; border-bottom: 1px solid #22c55e33; }
+        #hero-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .hero-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 30px; background: linear-gradient(transparent, black); }
+
+        .input-group { background: #0a0a0a; border: 1px solid #111; border-radius: 20px; padding: 20px; margin-bottom: 15px; }
+        label { font-size: 9px; font-weight: 900; color: #22c55e; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 8px; }
+        input, textarea, select { background: transparent; border: none; color: white; width: 100%; font-size: 15px; font-weight: 600; outline: none; }
+        textarea { min-height: 120px; resize: none; }
+        
+        .action-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 20px; background: rgba(0,0,0,0.9); border-top: 1px solid #1a1a1a; z-index: 100; display: flex; gap: 10px; }
+        .btn-publish { background: #22c55e; color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; flex: 2; padding: 18px; border-radius: 15px; transition: 0.2s; }
+        .btn-delete { background: #1a1a1a; color: #ef4444; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; flex: 1; padding: 18px; border-radius: 15px; border: 1px solid #330000; }
+        
+        #loader-overlay { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+
+    <div id="loader-overlay">
+        <div class="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        <p id="loader-msg" class="mt-4 text-[9px] font-black tracking-[3px] text-green-500 uppercase">Verifying Status...</p>
+    </div>
+
+    <nav class="glass-header p-5 flex justify-between items-center sticky top-0 z-50">
+        <a href="store.html" class="text-gray-400">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <h1 class="text-[10px] font-black uppercase tracking-[4px]">Asset Intake</h1>
+        <button onclick="document.getElementById('file-input').click()" class="text-green-500 font-bold text-[10px] uppercase">New Image</button>
+    </nav>
+
+    <main class="pb-32">
+        <div class="preview-hero">
+            <img id="hero-img" src="https://via.placeholder.com/600x400" alt="Preview">
+            <input type="file" id="file-input" class="hidden" accept="image/*" onchange="previewNewImage(this)">
+            <div class="hero-overlay">
+                <p class="text-[9px] font-black text-green-500 uppercase tracking-widest mb-1">Asset Intake Preview</p>
+                <h2 id="preview-name" class="text-2xl font-black uppercase">Product Title</h2>
+            </div>
+        </div>
+
+        <section class="p-6">
+            <div class="input-group">
+                <label>Asset Display Name</label>
+                <input type="text" id="asset-name" placeholder="E.G. PRO-EDIT PACK" oninput="syncPreview()">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label>Base Price (₹)</label>
+                    <input type="number" id="asset-price" placeholder="0.00">
+                </div>
+                <div class="input-group">
+                    <label>Discount Value (₹)</label>
+                    <input type="number" id="asset-discount" placeholder="Amount Off">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Asset Description & Key Info</label>
+                <textarea id="asset-desc" placeholder="Enter all product details, download links, or specific information here..."></textarea>
+            </div>
+
+            <div class="input-group">
+                <label>Listing Status</label>
+                <select id="asset-status">
+                    <option value="available">Active / Live</option>
+                    <option value="out_of_stock">Paused / Hidden</option>
+                </select>
+            </div>
+        </section>
+    </main>
+
+    <div class="action-bar">
+        <button id="delete-btn" onclick="deleteAsset()" class="btn-delete">Kill</button>
+        <button id="publish-btn" onclick="rePublish()" class="btn-publish">Re-Publish</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="config.js"></script>
+
+    <script>
+        let currentUid = null;
+        let productId = new URLSearchParams(window.location.search).get('edit');
+        let selectedFile = null;
+
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUid = user.uid;
+                await checkStoreLock(); // Critical Security Check
+                if(productId) loadProductDetails();
+                else document.getElementById('loader-overlay').style.display = 'none';
+            } else {
+                window.location.href = "signin.html";
+            }
+        });
+
+        // Redirect if Store is Locked
+        async function checkStoreLock() {
+            try {
+                const storeDoc = await db.collection("seller_settings").doc(currentUid).get();
+                if (storeDoc.exists && storeDoc.data().isLocked === true) {
+                    alert("STORE IS LOCKED. ACCESS DENIED.");
+                    window.location.href = "store.html";
+                }
+            } catch (e) { console.error("Lock Check Error", e); }
+        }
+
+        async function loadProductDetails() {
+            try {
+                const doc = await db.collection("products").doc(productId).get();
+                if(doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('asset-name').value = data.name || "";
+                    document.getElementById('asset-price').value = data.price || "";
+                    document.getElementById('asset-discount').value = data.discount || 0;
+                    document.getElementById('asset-desc').value = data.description || "";
+                    document.getElementById('asset-status').value = data.status || "available";
+                    if(data.imageURL) document.getElementById('hero-img').src = data.imageURL;
+                    syncPreview();
+                }
+                document.getElementById('loader-overlay').style.display = 'none';
+            } catch (e) { console.error(e); }
+        }
+
+        function syncPreview() {
+            document.getElementById('preview-name').innerText = document.getElementById('asset-name').value || "Product Title";
+        }
+
+        function previewNewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => { document.getElementById('hero-img').src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function deleteAsset() {
+            if(!productId) return;
+            if(!confirm("PERMANENTLY DELETE THIS ASSET?")) return;
+            
+            document.getElementById('loader-overlay').style.display = 'flex';
+            document.getElementById('loader-msg').innerText = "DELETING...";
+            
+            try {
+                await db.collection("products").doc(productId).delete();
+                window.location.href = "store.html";
+            } catch (e) { alert("Delete Failed"); }
+        }
+
+        async function rePublish() {
+            const btn = document.getElementById('publish-btn');
+            btn.innerText = "UPLOADING...";
+            btn.disabled = true;
+
+            const updateData = {
+                name: document.getElementById('asset-name').value,
+                price: parseFloat(document.getElementById('asset-price').value) || 0,
+                discount: parseFloat(document.getElementById('asset-discount').value) || 0,
+                description: document.getElementById('asset-desc').value,
+                status: document.getElementById('asset-status').value,
+                sellerId: currentUid,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if(selectedFile) {
+                    const storageRef = firebase.storage().ref(`products/${Date.now()}_${selectedFile.name}`);
+                    await storageRef.put(selectedFile);
+                    updateData.imageURL = await storageRef.getDownloadURL();
+                }
+                if(productId) await db.collection("products").doc(productId).update(updateData);
+                else await db.collection("products").add(updateData);
+                window.location.href = "store.html";
+            } catch (err) {
+                btn.innerText = "RE-PUBLISH";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
