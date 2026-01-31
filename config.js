@@ -21,9 +21,9 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-// Global variables for use in other scripts
-const db = firebase.firestore();
-const rtdb = firebase.database();
-const auth = firebase.auth();
+// USE 'var' INSTEAD OF 'const' SO OTHER FILES CAN SEE THEM
+var db = firebase.firestore();
+var rtdb = firebase.database();
+var auth = firebase.auth();
 
 console.log("ZoBuy Backend: Successfully Connected.");
