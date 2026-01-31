@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plan Selection</title>
+    <title>Plan Selection | ZoBuy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -69,24 +69,34 @@
                 <p class="text-gray-500 text-[10px] uppercase font-bold mb-2">Transfer Amount</p>
                 <p id="displayAmount" class="text-4xl font-black text-blue-500 mb-4">₹0</p>
                 <div class="text-left text-xs space-y-2 border-t border-white/10 pt-4">
-                    <p class="flex justify-between"><span class="text-gray-500">GPay ID:</span> <span class="font-bold">j3642833@oksbi</span></p>
+                    <p class="flex justify-between"><span class="text-gray-500">GPay ID:</span> <span class="font-bold uppercase">j3642833@oksbi</span></p>
                     <p class="flex justify-between"><span class="text-gray-500">Phone:</span> <span class="font-bold">9233137736</span></p>
                 </div>
             </div>
 
             <div class="space-y-4">
                 <a id="gpayBtn" href="#" class="block w-full bg-white text-black text-center font-black py-4 rounded-2xl hover:bg-blue-500 hover:text-white transition">
-                    PAY VIA GPAY
+                    1. PAY VIA UPI
                 </a>
                 
-                <a id="waBtn" href="#" class="block w-full bg-green-600 text-white text-center font-black py-4 rounded-2xl hover:bg-green-700 transition shadow-lg shadow-green-900/20">
-                    SEND SCREENSHOT HERE
+                <a id="waBtn" href="#" target="_blank" class="block w-full bg-green-600 text-white text-center font-black py-4 rounded-2xl hover:bg-green-700 transition shadow-lg shadow-green-900/20">
+                    2. SEND SCREENSHOT
                 </a>
+                
+                <p class="text-[10px] text-center text-gray-500 font-bold uppercase px-4 leading-tight">
+                    Store activates automatically after we verify your screenshot.
+                </p>
             </div>
 
             <button onclick="closePay()" class="w-full text-gray-600 text-[10px] font-bold mt-6 hover:text-white uppercase">Go Back</button>
         </div>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script src="config.js"></script>
 
     <script>
         const myVPA = "j3642833@oksbi";
@@ -96,13 +106,18 @@
             // Update the amount in the modal
             document.getElementById('displayAmount').innerText = '₹' + amount;
             
-            // Generate UPI Link (Works on Mobile)
+            // Generate UPI Link
             const upiLink = `upi://pay?pa=${myVPA}&pn=SellersHub&am=${amount}&cu=INR`;
             document.getElementById('gpayBtn').href = upiLink;
 
-            // Generate WhatsApp Link
-            const text = encodeURIComponent(`I've paid ₹${amount} for my 28-day plan activation. Here is the screenshot:`);
-            document.getElementById('waBtn').href = `https://wa.me/${myPhone}?text=${text}`;
+            // Get current user ID to help you identify them on WhatsApp
+            const user = firebase.auth().currentUser;
+            const uid = user ? user.uid : "USER_NOT_LOGGED_IN";
+
+            // Generate WhatsApp Link with the ID
+            const msg = `Hi, I paid ₹${amount} for my store plan.\n\nMy UID: ${uid}\n\nPlease activate my account.`;
+            const waURL = `https://wa.me/${myPhone}?text=${encodeURIComponent(msg)}`;
+            document.getElementById('waBtn').href = waURL;
 
             // Show the Modal
             document.getElementById('payModal').style.display = 'flex';
@@ -119,18 +134,14 @@
                 closePay();
             }
         }
+        
+        // Safety: Ensure user is logged in
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "signin.html";
+            }
+        });
     </script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-<script src="config.js"></script>
-
-<script>
-  // Quick test to see if everything is working
-  console.log("ZoBuy System: Page successfully connected to config.js");
-</script>
 
 </body>
 </html>

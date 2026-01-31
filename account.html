@@ -258,8 +258,7 @@
             </a>
         </div>
 
-        <div id="authArea" class="auth-container">
-            </div>
+        <div id="authArea" class="auth-container"></div>
     </div>
 
     <nav class="bottom-nav">
@@ -274,6 +273,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 <script src="config.js"></script>
+<script src="auth-check.js"></script>
 
 <script>
     const pfpInput = document.getElementById('pfpInput');
@@ -282,12 +282,10 @@
     const editPfpBtn = document.getElementById('editPfpBtn');
     const authArea = document.getElementById('authArea');
 
-    // Ensure user stays logged in across sessions
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
-            // USER LOGGED IN
             editPfpBtn.style.display = 'flex';
             authArea.innerHTML = `<a href="#" onclick="logout()" class="auth-action-link logout-style">Log Out</a>`;
             
@@ -308,7 +306,6 @@
                 }
             }
         } else {
-            // GUEST MODE
             document.getElementById('userNameDisplay').innerText = "Guest User";
             document.getElementById('userPhoneDisplay').innerText = "Sign in to manage your store";
             editPfpBtn.style.display = 'none';
@@ -316,7 +313,6 @@
             initialTxt.innerHTML = `<i class="fas fa-user"></i>`;
             initialTxt.style.display = 'block';
             
-            // Show Sign In above Create Account
             authArea.innerHTML = `
                 <a href="signin.html" class="auth-action-link signin-style">Sign In</a>
                 <a href="createaccount.html" class="auth-action-link create-acc-style">Create Account</a>
@@ -344,30 +340,18 @@
             initialTxt.style.display = 'none';
         } catch (error) {
             console.error("Upload failed:", error);
-            alert("Rilru ana hrih... image upload a hlawhchham.");
         }
     });
 
-    document.getElementById('storeActionBtn').addEventListener('click', async () => {
+    // REPAIRED: This button now sends the user to store.html.
+    // auth-check.js will automatically catch them and send to gateway or renew if needed.
+    document.getElementById('storeActionBtn').addEventListener('click', () => {
         const user = firebase.auth().currentUser;
         if (!user) {
             window.location.href = "signin.html";
             return;
         }
-        
-        const btn = document.getElementById('storeActionBtn');
-        btn.innerText = "Checking...";
-        try {
-            const userDoc = await db.collection("user_data").doc(user.uid).get();
-            if (!userDoc.exists) { window.location.href = "gateway.html"; return; }
-            const userData = userDoc.data();
-            const expiry = userData.planExpiry ? new Date(userData.planExpiry) : null;
-            if (userData.hasPlan === true && (!expiry || new Date() < expiry)) {
-                window.location.href = "store.html";
-            } else {
-                window.location.href = "gateway.html";
-            }
-        } catch (e) { btn.innerText = "Open/create Store"; }
+        window.location.href = "store.html";
     });
 
     function logout() {
