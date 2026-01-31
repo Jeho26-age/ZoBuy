@@ -17,9 +17,15 @@
         .profile-pic { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #111; }
         .panel { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 18px; transition: 0.2s; }
         .editable-title { background: transparent; border: none; color: #fff; font-weight: 900; font-size: 1.5rem; text-transform: uppercase; text-align: center; outline: none; width: 100%; }
+        #loader-overlay { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
+
+    <div id="loader-overlay">
+        <div class="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-[10px] font-bold tracking-[3px] text-green-500 uppercase">Syncing Database...</p>
+    </div>
 
     <div class="timer-bar">
         Store Closing in: <span id="countdown">SYNCING...</span>
@@ -35,7 +41,7 @@
         </div>
     </nav>
 
-    <main id="main-content" class="flex flex-col items-center pt-4 pb-8">
+    <main class="flex flex-col items-center pt-4 pb-8">
         <div class="profile-frame">
             <img src="https://via.placeholder.com/120" class="profile-pic" id="pfp-display">
         </div>
@@ -45,13 +51,13 @@
         </div>
 
         <div class="flex items-center justify-center gap-3 mt-4 px-4 w-full max-w-xs">
-            <input type="text" class="editable-title" value="LOADING..." id="storeName" readonly>
+            <input type="text" class="editable-title" value="MY STORE" id="storeName" readonly>
         </div>
 
         <section class="w-full p-6 mt-6 space-y-4">
             <p class="text-[10px] font-black text-gray-700 uppercase tracking-[3px] mb-4">Inventory Feed</p>
             <div id="inventory-list" class="space-y-4">
-                <p class="text-center text-gray-800 text-xs py-10">Searching for products...</p>
+                <p class="text-center text-gray-800 text-xs py-10">Fetching items...</p>
             </div>
         </section>
     </main>
@@ -59,42 +65,43 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="config.js"></script>
     <script src="auth-check.js"></script>
 
     <script>
-        // CRITICAL FIX: Initialize Firestore variable
-        const db = firebase.firestore();
+        // DO NOT declare 'db' here. It is already declared in config.js
         let countdownInterval;
 
         firebase.auth().onAuthStateChanged(user => {
             if (user) {
-                fetchData(user);
-                loadInventory();
+                initStore(user);
             } else {
                 window.location.href = "signin.html";
             }
         });
 
-        async function fetchData(user) {
+        async function initStore(user) {
             try {
                 document.getElementById('uid-text').innerText = `ID: ZB-${user.uid.substring(0,8).toUpperCase()}`;
                 
+                // Use the global 'db' from config.js
                 const userDoc = await db.collection("user_data").doc(user.uid).get();
                 
                 if(userDoc.exists) {
                     const data = userDoc.data();
                     document.getElementById('storeName').value = data.storeName || "MY STORE";
                     if(data.profilePic) document.getElementById('pfp-display').src = data.profilePic;
-                    
-                    if(data.planExpiry) {
-                        initTimer(data.planExpiry);
-                    } else {
-                        document.getElementById('countdown').innerText = "NO ACTIVE PLAN";
-                    }
+                    if(data.planExpiry) initTimer(data.planExpiry);
                 }
+
+                await loadInventory();
+                
+                // Hide loader only when everything is done
+                document.getElementById('loader-overlay').style.display = 'none';
+
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                console.error("Store Init Error:", error);
             }
         }
 
@@ -106,7 +113,6 @@
             }
 
             if (countdownInterval) clearInterval(countdownInterval);
-
             countdownInterval = setInterval(() => {
                 const now = Date.now();
                 const distance = expiry - now;
@@ -114,28 +120,27 @@
                 if (distance <= 0) {
                     clearInterval(countdownInterval);
                     document.getElementById('countdown').innerText = "STORE CLOSED";
-                    // Give it 1 second then reload to trigger auth-check.js redirect
-                    setTimeout(() => window.location.reload(), 1000);
+                    setTimeout(() => window.location.reload(), 1500);
                     return;
                 }
 
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
 
-                document.getElementById('countdown').innerText = `${days}D ${hours}H ${minutes}M ${seconds}S`;
+                document.getElementById('countdown').innerText = `${d}D ${h}H ${m}M ${s}S`;
             }, 1000);
         }
 
         async function loadInventory() {
             const listContainer = document.getElementById('inventory-list');
             try {
-                // Ensure you have an index for this query if it fails
-                const snapshot = await db.collection("products").limit(20).get();
+                // Fetching products from the global 'db'
+                const snapshot = await db.collection("products").limit(15).get();
                 
                 if (snapshot.empty) {
-                    listContainer.innerHTML = '<p class="text-center text-gray-500 text-xs py-10">No items found.</p>';
+                    listContainer.innerHTML = '<p class="text-center text-gray-500 text-xs py-10 uppercase tracking-widest">Inventory Empty</p>';
                     return;
                 }
 
@@ -147,16 +152,15 @@
                             <div class="flex items-center gap-4">
                                 <img src="${item.imageURL || 'https://via.placeholder.com/50'}" class="w-12 h-12 bg-zinc-900 rounded-xl object-cover">
                                 <div>
-                                    <h3 class="text-xs font-bold uppercase">${item.name || 'Unnamed Item'}</h3>
+                                    <h3 class="text-xs font-bold uppercase">${item.name || 'Product'}</h3>
                                     <p class="text-[9px] text-green-500 font-bold">₹${item.price || '0'}</p>
                                 </div>
                             </div>
                             <button class="text-[8px] font-black bg-zinc-800 text-white px-3 py-2 rounded-lg uppercase">Edit</button>
                         </div>`;
                 });
-            } catch (err) { 
-                console.error("Inventory Load Error:", err);
-                listContainer.innerHTML = '<p class="text-center text-red-500 text-xs py-10">Error loading inventory.</p>';
+            } catch (err) {
+                console.error("Inventory Fetch Error:", err);
             }
         }
     </script>
