@@ -1,9 +1,10 @@
 // auth-check.js
+var db = db || firebase.firestore(); 
+
 firebase.auth().onAuthStateChanged(async (user) => {
     const path = window.location.pathname;
     const currentPage = path.split("/").pop();
 
-    // 1. Redirect if not logged in
     if (!user) {
         if (currentPage === "store.html" || currentPage === "item.html") {
             window.location.href = "signin.html";
@@ -11,15 +12,12 @@ firebase.auth().onAuthStateChanged(async (user) => {
         return; 
     }
 
-    // 2. Skip checks for profile/auth pages to prevent redirect loops
     const isInternalAuthPage = ["account.html", "signin.html", "createaccount.html", "gateway.html"].includes(currentPage);
     if (isInternalAuthPage) return;
 
-    // 3. Protected Page Logic (Store & Items)
     if (currentPage === "store.html" || currentPage === "item.html") {
         try {
-            // Get user data from Firestore
-            const userDoc = await firebase.firestore().collection("user_data").doc(user.uid).get();
+            const userDoc = await db.collection("user_data").doc(user.uid).get();
             
             if (!userDoc.exists) {
                 window.location.href = "gateway.html";
@@ -28,36 +26,40 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
             const userData = userDoc.data();
 
-            // If hasPlan is already false, go to gateway
-            if (!userData.hasPlan) {
+            // 1. If hasPlan is already false, stop here.
+            if (userData.hasPlan === false) {
                 window.location.href = "gateway.html";
                 return;
             }
 
-            // DATE VALIDATION
+            // 2. Date Validation Logic
             const now = Date.now();
+            
+            // Safety: If there is no expiry date string at all
+            if (!userData.planExpiry) {
+                console.warn("No expiry date found. Plan remains active for now.");
+                return; 
+            }
+
             const expiryDate = new Date(userData.planExpiry);
             const expiryTime = expiryDate.getTime();
 
-            // Check if the date is valid (Not NaN)
+            // 3. The "Invalid Date" Protection
+            // If the date format is wrong, DO NOT reset to false. Just log it.
             if (isNaN(expiryTime)) {
-                console.error("Invalid Date in Firebase! Please check planExpiry format.");
-                return; // Stop here so we don't accidentally kill the plan
+                console.error("Firebase planExpiry format is wrong! Update it to an ISO string.");
+                return; 
             }
 
-            // THE KILL SWITCH: Only triggers if we are CERTAIN time is up
+            // 4. THE KILL SWITCH
+            // Only runs if the date is valid AND it is truly in the past.
             if (now > expiryTime) {
-                console.log("Plan expired. Updating database...");
-                await firebase.firestore().collection("user_data").doc(user.uid).update({
+                console.log("Plan expired. Moving to false...");
+                await db.collection("user_data").doc(user.uid).update({
                     hasPlan: false
                 });
-                
-                // Redirect to renewal page (or gateway if you don't have renew.html)
-                window.location.href = "gateway.html"; 
-                return;
+                window.location.href = "gateway.html";
             }
-
-            console.log("Plan is active. Expires at:", expiryDate.toLocaleString());
 
         } catch (error) {
             console.error("Auth Guard Error:", error);
