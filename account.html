@@ -7,84 +7,129 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --zobuy-green: #1a4d2e;
-            --light-green: #e8f5e9;
-            --bg: #f8f9fa;
+            --black: #000000;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2d2d2d;
+            --light-gray: #f5f5f5;
             --white: #ffffff;
+            --border: #e0e0e0;
+            --text-primary: #000000;
+            --text-secondary: #666666;
         }
 
         body {
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            background-color: var(--bg);
-            color: #333;
+            background-color: var(--white);
+            color: var(--text-primary);
             padding-bottom: 90px;
         }
 
         /* --- MODERN HEADER --- */
         .header-gradient {
-            background: linear-gradient(135deg, var(--zobuy-green) 0%, #2d7a4a 100%);
-            height: 180px;
+            background: var(--black);
             padding: 30px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             color: white;
-            border-radius: 0 0 30px 30px;
+            position: relative;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 15px;
         }
 
         .avatar-circle {
-            width: 80px;
-            height: 80px;
+            width: 100%;
+            height: 100%;
             background: var(--white);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 40px;
             font-weight: bold;
-            color: var(--zobuy-green);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            color: var(--black);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border: 3px solid white;
         }
 
-        .user-name { font-size: 20px; font-weight: 600; margin: 0; }
-        .user-phone { font-size: 14px; opacity: 0.9; }
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .edit-pfp {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--black);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: none;
+            font-size: 14px;
+        }
+
+        .user-name { 
+            font-size: 22px; 
+            font-weight: 600; 
+            margin: 0; 
+            color: var(--white);
+        }
+        .user-phone { 
+            font-size: 14px; 
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
 
         /* --- CONTENT WRAPPER --- */
         .container {
-            padding: 0 15px;
-            margin-top: -30px; /* Pulls content up over the green background */
+            padding: 20px 15px;
         }
 
-        /* --- SELLER HUB (PROMINENT) --- */
+        /* --- SELLER HUB --- */
         .seller-hub {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 20px;
+            background: var(--black);
+            border-radius: 16px;
+            padding: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            margin-bottom: 25px;
         }
 
-        .hub-text h3 { margin: 0; color: var(--zobuy-green); font-size: 18px; }
-        .hub-text p { margin: 5px 0 0; font-size: 12px; color: #777; }
+        .hub-text h3 { margin: 0; color: white; font-size: 18px; font-weight: 600;}
+        .hub-text p { margin: 5px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.7); }
 
         .hub-buttons { display: flex; gap: 10px; }
         
         .hub-btn {
             padding: 10px 18px;
-            border-radius: 12px;
-            font-weight: bold;
+            border-radius: 10px;
+            font-weight: 600;
             text-decoration: none;
             font-size: 13px;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
         }
 
-        .btn-my-store { background: var(--zobuy-green); color: white; }
-        .btn-sell { border: 2px solid var(--zobuy-green); color: var(--zobuy-green); }
+        .btn-my-store { background: white; color: var(--black); }
+        .btn-sell { border: 2px solid white; color: white; background: transparent; }
 
         /* --- ACTION GRID --- */
         .menu-grid {
@@ -96,34 +141,53 @@
 
         .menu-card {
             background: var(--white);
-            padding: 20px;
-            border-radius: 18px;
+            padding: 24px 20px;
+            border-radius: 16px;
             text-align: center;
             text-decoration: none;
-            color: #444;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-            border: 1px solid #f0f0f0;
-            transition: 0.3s;
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
         }
 
-        .menu-card:active { transform: scale(0.95); }
-        .menu-card i {
-            display: block;
-            font-size: 24px;
-            color: var(--zobuy-green);
-            margin-bottom: 10px;
-        }
+        .menu-card:hover { transform: translateY(-4px); border-color: var(--black); }
+        .menu-card i { display: block; font-size: 26px; color: var(--black); margin-bottom: 12px; }
         .menu-card span { font-size: 14px; font-weight: 500; }
 
-        /* --- LOGOUT --- */
-        .logout-link {
+        /* --- AUTH BUTTONS --- */
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-action-link {
             display: block;
             text-align: center;
-            color: #d9534f;
             text-decoration: none;
             font-weight: 600;
             padding: 15px;
-            margin-bottom: 20px;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .signin-style {
+            background: var(--black);
+            color: white;
+            border: 2px solid var(--black);
+        }
+
+        .create-acc-style {
+            background: transparent;
+            color: var(--black);
+            border: 2px solid var(--black);
+        }
+
+        .logout-style {
+            color: #d93025;
+            border: 2px solid #d93025;
+            background: transparent;
         }
 
         /* --- BOTTOM NAV --- */
@@ -131,32 +195,32 @@
             position: fixed;
             bottom: 0;
             width: 100%;
-            background: var(--zobuy-green);
+            background: var(--black);
             display: flex;
             justify-content: space-around;
-            padding: 15px 0;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            padding: 12px 0;
+            z-index: 1000;
         }
-
-        .nav-btn {
-            color: rgba(255,255,255,0.6);
-            text-decoration: none;
-            text-align: center;
-            font-size: 11px;
-            flex: 1;
-        }
-
+        .nav-btn { color: rgba(255, 255, 255, 0.5); text-decoration: none; text-align: center; font-size: 11px; flex: 1; }
         .nav-btn i { display: block; font-size: 22px; margin-bottom: 4px; }
-        .nav-btn.active { color: white; }
+        .nav-btn.active { color: var(--white); font-weight: 600; }
     </style>
 </head>
 <body>
 
     <div class="header-gradient">
-        <div class="avatar-circle">Z</div>
-        <h2 class="user-name">Zobuy User</h2>
-        <span class="user-phone">+91 9876543210</span>
+        <div class="avatar-container">
+            <div class="avatar-circle" id="userInitial">
+                <img id="profileImg" src="" style="display:none;">
+                <span id="initialTxt"><i class="fas fa-user"></i></span>
+            </div>
+            <label for="pfpInput" class="edit-pfp" id="editPfpBtn" style="display:none;">
+                <i class="fas fa-pencil-alt"></i>
+            </label>
+            <input type="file" id="pfpInput" style="display:none;" accept="image/*">
+        </div>
+        <h2 class="user-name" id="userNameDisplay">Guest User</h2>
+        <span class="user-phone" id="userPhoneDisplay">Sign in to manage your store</span>
     </div>
 
     <div class="container">
@@ -166,7 +230,7 @@
                 <p>Manage your business</p>
             </div>
             <div class="hub-buttons">
-                <a href="store.html" class="hub-btn btn-my-store">My Store</a>
+                <button id="storeActionBtn" class="hub-btn btn-my-store">Open/create Store</button>
                 <a href="sell.html" class="hub-btn btn-sell">Sell Item</a>
             </div>
         </div>
@@ -188,48 +252,129 @@
                 <i class="fas fa-map-marker-alt"></i>
                 <span>Addresses</span>
             </a>
-            <a href="language.html" class="menu-card">
-                <i class="fas fa-globe"></i>
-                <span>Language</span>
-            </a>
             <a href="help.html" class="menu-card">
                 <i class="fas fa-info-circle"></i>
                 <span>Support</span>
             </a>
         </div>
 
-        <a href="signin.html" class="logout-link">Log Out</a>
+        <div id="authArea" class="auth-container">
+            </div>
     </div>
 
     <nav class="bottom-nav">
-        <a href="homepage.html" class="nav-btn">
-            <i class="fa fa-home"></i>
-            Home
-        </a>
-        <a href="categories.html" class="nav-btn">
-            <i class="fa fa-th-large"></i>
-            Categories
-        </a>
-        <a href="account.html" class="nav-btn active">
-            <i class="fa fa-user-circle"></i>
-            Account
-        </a>
-        <a href="cart.html" class="nav-btn">
-            <i class="fa fa-shopping-cart"></i>
-            Cart
-        </a>
+        <a href="homepage.html" class="nav-btn"><i class="fa fa-home"></i>Home</a>
+        <a href="categories.html" class="nav-btn"><i class="fa fa-th-large"></i>Categories</a>
+        <a href="account.html" class="nav-btn active"><i class="fa fa-user-circle"></i>Account</a>
+        <a href="cart.html" class="nav-btn"><i class="fa fa-shopping-cart"></i>Cart</a>
     </nav>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 <script src="config.js"></script>
 
 <script>
-  // Quick test to see if everything is working
-  console.log("ZoBuy System: Page successfully connected to config.js");
-</script>
+    const pfpInput = document.getElementById('pfpInput');
+    const profileImg = document.getElementById('profileImg');
+    const initialTxt = document.getElementById('initialTxt');
+    const editPfpBtn = document.getElementById('editPfpBtn');
+    const authArea = document.getElementById('authArea');
 
+    // Ensure user stays logged in across sessions
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            // USER LOGGED IN
+            editPfpBtn.style.display = 'flex';
+            authArea.innerHTML = `<a href="#" onclick="logout()" class="auth-action-link logout-style">Log Out</a>`;
+            
+            const userDoc = await db.collection("user_data").doc(user.uid).get();
+            if (userDoc.exists) {
+                const data = userDoc.data();
+                document.getElementById('userNameDisplay').innerText = data.storeName || "User";
+                document.getElementById('userPhoneDisplay').innerText = data.phone || "";
+                
+                if (data.profilePic) {
+                    profileImg.src = data.profilePic;
+                    profileImg.style.display = 'block';
+                    initialTxt.style.display = 'none';
+                } else {
+                    initialTxt.innerText = (data.storeName || "U").charAt(0).toUpperCase();
+                    initialTxt.style.display = 'block';
+                    profileImg.style.display = 'none';
+                }
+            }
+        } else {
+            // GUEST MODE
+            document.getElementById('userNameDisplay').innerText = "Guest User";
+            document.getElementById('userPhoneDisplay').innerText = "Sign in to manage your store";
+            editPfpBtn.style.display = 'none';
+            profileImg.style.display = 'none';
+            initialTxt.innerHTML = `<i class="fas fa-user"></i>`;
+            initialTxt.style.display = 'block';
+            
+            // Show Sign In above Create Account
+            authArea.innerHTML = `
+                <a href="signin.html" class="auth-action-link signin-style">Sign In</a>
+                <a href="createaccount.html" class="auth-action-link create-acc-style">Create Account</a>
+            `;
+        }
+    });
+
+    pfpInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        const user = firebase.auth().currentUser;
+        if (!file || !user) return;
+
+        initialTxt.innerText = "...";
+        initialTxt.style.display = 'block';
+        profileImg.style.display = 'none';
+
+        const storageRef = firebase.storage().ref(`profile_pics/${user.uid}`);
+        
+        try {
+            await storageRef.put(file);
+            const downloadURL = await storageRef.getDownloadURL();
+            await db.collection("user_data").doc(user.uid).update({ profilePic: downloadURL });
+            profileImg.src = downloadURL;
+            profileImg.style.display = 'block';
+            initialTxt.style.display = 'none';
+        } catch (error) {
+            console.error("Upload failed:", error);
+            alert("Rilru ana hrih... image upload a hlawhchham.");
+        }
+    });
+
+    document.getElementById('storeActionBtn').addEventListener('click', async () => {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            window.location.href = "signin.html";
+            return;
+        }
+        
+        const btn = document.getElementById('storeActionBtn');
+        btn.innerText = "Checking...";
+        try {
+            const userDoc = await db.collection("user_data").doc(user.uid).get();
+            if (!userDoc.exists) { window.location.href = "gateway.html"; return; }
+            const userData = userDoc.data();
+            const expiry = userData.planExpiry ? new Date(userData.planExpiry) : null;
+            if (userData.hasPlan === true && (!expiry || new Date() < expiry)) {
+                window.location.href = "store.html";
+            } else {
+                window.location.href = "gateway.html";
+            }
+        } catch (e) { btn.innerText = "Open/create Store"; }
+    });
+
+    function logout() {
+        firebase.auth().signOut().then(() => {
+            window.location.reload(); 
+        });
+    }
+</script>
 </body>
 </html>

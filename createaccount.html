@@ -54,13 +54,20 @@
             font-size: 1rem;
         }
 
-        /* Eye Icon Positioning */
         .input-group i {
             position: absolute;
             right: 12px;
             top: 38px;
             cursor: pointer;
             color: #777;
+        }
+
+        /* Real-time status text */
+        #usernameStatus {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: block;
+            font-weight: bold;
         }
 
         .signup-button {
@@ -80,27 +87,43 @@
             background-color: #008a00;
         }
 
-        /* OTP Section (Amazon-style Verification Page) */
-        #otp-section {
+        /* Modals Styling */
+        .modal {
             display: none;
-            text-align: left;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-
-        .otp-header {
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .open-gmail-btn, .close-btn, .continue-btn {
+            display: block;
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
             font-weight: bold;
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
         }
-
-        .otp-subtext {
-            font-size: 0.9rem;
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        #recaptcha-container {
-            margin-top: 10px;
-        }
+        .close-btn { background: #d93025; }
+        .continue-btn { background: #00a400; }
     </style>
 </head>
 <body>
@@ -110,54 +133,66 @@
         <h2>Create Account</h2>
         <form id="registrationForm">
             <div class="input-group">
-                <label for="username">Your name</label>
-                <input type="text" id="username" placeholder="First and last name" required>
+                <label for="username">Your Name</label>
+                <input type="text" id="username" placeholder="I Hming..." required>
+                <span id="usernameStatus"></span>
             </div>
 
             <div class="input-group">
-                <label for="identifier">Mobile number or email</label>
-                <input type="text" id="identifier" placeholder="+91..." required>
+                <label for="identifier">Enter Gmail</label>
+                <input type="email" id="identifier" placeholder="Hetah hian i gmail type rwh...@gmail.com" required>
+            </div>
+
+            <div class="input-group">
+                <label for="phone">Phone Number </label>
+                <input type="tel" id="phone" placeholder="I what's app Number emaw call thei na turm.." required>
             </div>
 
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="At least 6 characters" required>
+                <input type="password" id="password" placeholder="I password tur type rawh.." required>
                 <i class="far fa-eye" id="togglePass"></i>
             </div>
 
             <div class="input-group">
-                <label for="confirm_password">Re-enter password</label>
-                <input type="password" id="confirm_password" required>
+                <label for="confirm_password"> Re-enter password</label>
+                <input type="password" id="confirm_password" placeholder="I password tur type le rawh..." required>
                 <i class="far fa-eye" id="toggleConfirm"></i>
             </div>
 
-            <div id="recaptcha-container"></div>
-
-            <button type="submit" id="signupBtn" class="signup-button">Verify mobile number</button>
+            <button type="submit" id="signupBtn" class="signup-button">Verify Rawh</button>
         </form>
     </div>
+</div>
 
-    <div id="otp-section">
-        <div class="otp-header">Verify mobile number</div>
-        <p class="otp-subtext">A text with a One-Time Password (OTP) has been sent to your number.</p>
-        
-        <div class="input-group">
-            <label for="otp">Enter OTP</label>
-            <input type="text" id="otp" placeholder="123456" required>
-        </div>
-        
-        <button type="button" id="verifyBtn" class="signup-button" style="background-color: #f0c14b; color: #111; border: 1px solid #a88734;">Create your ZoBuy account</button>
-        
-        <p style="font-size: 0.8rem; margin-top: 15px; color: #0066c0; cursor: pointer;" onclick="location.reload()">Resend OTP</p>
+<div id="verifyModal" class="modal">
+    <div class="modal-content">
+        <i class="fas fa-envelope-open-text" style="color: #00a400;"></i>
+        <h3 id="displayEmail">Check your Gmail</h3>
+        <p>Verification link kan thawn tawh e. Gmail-ah sawn va click rawh le.</p>
+        <a href="https://mail.google.com" target="_blank" class="open-gmail-btn" id="gmailBtn" onclick="showContinueBtn()">Open Gmail</a>
+        <button id="continueBtn" style="display:none;" class="continue-btn" onclick="checkVerification()">Verify Done - Open Store</button>
+    </div>
+</div>
+
+<div id="existsModal" class="modal">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-circle" style="color: #d93025;"></i>
+        <h3 id="errorHeader">Account Problem</h3>
+        <p id="errorMsg"></p>
+        <button onclick="document.getElementById('existsModal').style.display='none'" class="close-btn">OK</button>
     </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="config.js"></script>
 
 <script>
-    // 1. Password Toggles
+    let isNameAvailable = false;
+    let suggestedName = "";
+
     function setupToggle(iconId, inputId) {
         const icon = document.getElementById(iconId);
         const input = document.getElementById(inputId);
@@ -170,48 +205,106 @@
     setupToggle('togglePass', 'password');
     setupToggle('toggleConfirm', 'confirm_password');
 
-    // 2. Firebase Phone Auth Setup
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        'size': 'normal'
+    // Real-time Username Check
+    const usernameInput = document.getElementById('username');
+    const statusText = document.getElementById('usernameStatus');
+
+    usernameInput.addEventListener('input', async () => {
+        const name = usernameInput.value.trim();
+        if (name.length < 3) {
+            statusText.innerText = "";
+            return;
+        }
+
+        statusText.innerText = "Checking...";
+        statusText.style.color = "gray";
+
+        const nameCheck = await db.collection("user_data").where("storeName", "==", name).get();
+        
+        if (!nameCheck.empty) {
+            suggestedName = name + Math.floor(100 + Math.random() * 900);
+            statusText.innerText = "UserName is already in use.. use: " + suggestedName;
+            statusText.style.color = "red";
+            isNameAvailable = false;
+        } else {
+            statusText.innerText = "✅ Name available";
+            statusText.style.color = "green";
+            isNameAvailable = true;
+        }
     });
 
-    let confirmationResult;
-    const regView = document.getElementById('registration-view');
-    const otpSection = document.getElementById('otp-section');
+    function showContinueBtn() {
+        document.getElementById('gmailBtn').style.display = 'none';
+        document.getElementById('continueBtn').style.display = 'block';
+    }
 
-    // 3. Submit Form -> Send OTP
-    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    async function checkVerification() {
+        const user = firebase.auth().currentUser;
+        await user.reload();
+        if (user.emailVerified) {
+            window.location.href = "gateway.html";
+        } else {
+            alert("I email i la verify lo! Khawngaihin i mail-ah va check leh rawh.");
+        }
+    }
+
+    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        // Password Match Validation
-        if(document.getElementById('password').value !== document.getElementById('confirm_password').value) {
+        const name = usernameInput.value.trim();
+        const email = document.getElementById('identifier').value;
+        const phone = document.getElementById('phone').value;
+        const password = document.getElementById('password').value;
+        const confirm_password = document.getElementById('confirm_password').value;
+
+        // Force check username before submit
+        if (!isNameAvailable) {
+            document.getElementById('errorHeader').innerText = "Username taken";
+            document.getElementById('errorMsg').innerText = "Username hi hman a ni tawh... Khawngaihin a dang hmang rawh.";
+            document.getElementById('existsModal').style.display = 'flex';
+            return;
+        }
+
+        if(password !== confirm_password) {
             alert("Passwords do not match!");
             return;
         }
 
-        const phoneNumber = document.getElementById('identifier').value;
-        const appVerifier = window.recaptchaVerifier;
+        const btn = document.getElementById('signupBtn');
+        btn.innerText = "Processing...";
+        btn.disabled = true;
 
-        firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier)
-            .then((result) => {
-                confirmationResult = result;
-                // Transition to OTP view
-                regView.style.display = 'none';
-                otpSection.style.display = 'block';
-            }).catch((error) => {
-                alert("Error: " + error.message);
+        try {
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            await user.sendEmailVerification();
+            
+            // Saving to user_data collection as requested
+            await db.collection("user_data").doc(user.uid).set({
+                storeName: name,
+                email: email,
+                phone: phone,
+                userId: user.uid,
+                hasPlan: false,
+                planExpiry: null,
+                joinedAt: new Date().toISOString()
             });
-    });
 
-    // 4. Verify OTP -> Finish
-    document.getElementById('verifyBtn').addEventListener('click', function() {
-        const code = document.getElementById('otp').value;
-        confirmationResult.confirm(code).then(() => {
-            alert("Welcome to ZoBuy!");
-            window.history.back(); // Return to previous page
-        }).catch(() => {
-            alert("The OTP entered is incorrect.");
-        });
+            document.getElementById('displayEmail').innerText = "Check " + email;
+            document.getElementById('verifyModal').style.display = 'flex';
+
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+                document.getElementById('errorHeader').innerText = "Gmail hman tawh a ni";
+                document.getElementById('errorMsg').innerText = "He mi gmail hi account siam nan hman a ni tawh, Gmail dang in account i siam leh thei ang.";
+                document.getElementById('existsModal').style.display = 'flex';
+            } else {
+                alert("Error: " + error.message);
+            }
+            btn.innerText = "Verify Rawh";
+            btn.disabled = false;
+        }
     });
 </script>
 </body>

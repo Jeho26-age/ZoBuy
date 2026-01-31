@@ -6,24 +6,23 @@
     <title>Zobuy - Sign In</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* CSS STYLES */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000000; /* Pure black background */
+            background-color: #000000;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Moves the box towards the top */
+            align-items: flex-start;
             min-height: 100vh;
             margin: 0;
             padding-top: 50px;
         }
 
         .signin-container {
-            background: white; /* White rectangular box */
+            background: white;
             padding: 40px 30px;
             border-radius: 20px;
             width: 90%;
-            max-width: 400px; /* Standard size for mobile/desktop */
+            max-width: 400px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
             display: flex;
@@ -38,7 +37,7 @@
 
         .logo {
             width: 100%;
-            max-width: 300px; /* Adjusted so it stays centered and large */
+            max-width: 300px;
             height: auto;
             display: block;
             margin: 0 auto;
@@ -71,7 +70,6 @@
             outline: none;
         }
 
-        /* Password Wrapper for Eye Icon */
         .password-wrapper {
             position: relative;
         }
@@ -85,15 +83,6 @@
             color: #777;
             font-size: 1.2rem;
             z-index: 10;
-        }
-
-        /* Error Notification */
-        #error-popup {
-            color: #d71920;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-top: 5px;
-            display: none; /* Hidden by default */
         }
 
         .login-btn {
@@ -110,8 +99,8 @@
             transition: background 0.3s;
         }
 
-        .login-btn:hover {
-            background-color: #143d24;
+        .login-btn:disabled {
+            background-color: #555;
         }
 
         .auth-links {
@@ -139,8 +128,33 @@
             font-weight: 500;
         }
 
-        .forgot-password:hover {
-            text-decoration: underline;
+        /* Error Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 300px;
+        }
+        .modal-content i { font-size: 3rem; color: #d93025; margin-bottom: 15px; }
+        .close-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #1a4d2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
         }
     </style>
 </head>
@@ -152,68 +166,119 @@
             <p class="tagline">Mizoram Online Shopping Center</p>
         </div>
 
-        <form id="signinForm" action="homepage.html" method="GET">
+        <form id="signinForm">
             <div class="input-group">
-                <input type="text" id="userEmail" placeholder="Gmail or Phone Number" required>
+                <input type="text" id="userIdentifier" placeholder="Gmail or Phone Number" required>
             </div>
             
             <div class="input-group password-wrapper">
                 <input type="password" id="password" placeholder="Password" required>
                 <i class="far fa-eye" id="togglePassword"></i>
-                <div id="error-popup">Wrong password</div>
             </div>
 
-            <button type="submit" class="login-btn">Login</button>
+            <button type="submit" id="loginBtn" class="login-btn">Login</button>
         </form>
 
         <div class="auth-links">
             <a href="createaccount.html" class="create-btn">Create an account</a>
-            
             <a href="resetpassword.html" class="forgot-password">Forgot Password?</a>
         </div>
     </div>
 
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <i class="fas fa-exclamation-circle"></i>
+            <h3 id="errorTitle">Hataih!</h3>
+            <p id="errorMsg"></p>
+            <button onclick="closeModal()" class="close-btn">OK</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
+
     <script>
-        // JAVASCRIPT LOGIC
-        
-        // 1. Toggle Password Visibility
         const togglePassword = document.querySelector('#togglePassword');
         const passwordField = document.querySelector('#password');
+        const errorModal = document.getElementById('errorModal');
+        const errorMsg = document.getElementById('errorMsg');
 
+        // 1. Password Visibility
         togglePassword.addEventListener('click', function () {
-            // switch between password and text
             const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordField.setAttribute('type', type);
-            
-            // toggle eye icon
             this.classList.toggle('fa-eye-slash');
         });
 
-        // 2. Error Notification Logic
-        const signinForm = document.getElementById('signinForm');
-        const errorPopup = document.getElementById('error-popup');
+        function showError(msg) {
+            errorMsg.innerText = msg;
+            errorModal.style.display = 'flex';
+        }
 
-        signinForm.addEventListener('submit', function(e) {
-            const passValue = passwordField.value;
+        function closeModal() {
+            errorModal.style.display = 'none';
+        }
 
-            // Demo logic: If password is "wrong", show red text
-            if (passValue === "wrong") {
-                e.preventDefault(); // Stop from going to homepage.html
-                errorPopup.style.display = 'block';
+        // 2. Login Logic
+        document.getElementById('signinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const identifier = document.getElementById('userIdentifier').value.trim();
+            const password = passwordField.value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.innerText = "Checking...";
+
+            let emailToLogin = identifier;
+
+            try {
+                // Check if the input is a phone number (only digits)
+                if (/^\d+$/.test(identifier)) {
+                    const userQuery = await db.collection("user_data").where("phone", "==", identifier).get();
+                    
+                    if (userQuery.empty) {
+                        showError("He phone number hi register a ni lo. Khawngaihin i number check leh rawh.");
+                        btn.disabled = false;
+                        btn.innerText = "Login";
+                        return;
+                    }
+                    // Get the email associated with this phone number
+                    emailToLogin = userQuery.docs[0].data().email;
+                }
+
+                // Sign in with Firebase
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(emailToLogin, password);
+                const user = userCredential.user;
+
+                // Check plan status in Firestore
+                const userDoc = await db.collection("user_data").doc(user.uid).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    if (userData.hasPlan === true) {
+                        window.location.href = "store.html";
+                    } else {
+                        window.location.href = "account.html";
+                    }
+                } else {
+                    showError("User data hmuh a ni lo.");
+                    btn.disabled = false;
+                }
+
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    showError("Gmail/Phone emaw Password a dik lo. Khawngaihin check tha leh rawh.");
+                } else {
+                    showError("Error: " + error.message);
+                }
+                btn.disabled = false;
+                btn.innerText = "Login";
             }
         });
     </script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-<script src="config.js"></script>
-
-<script>
-  // Quick test to see if everything is working
-  console.log("ZoBuy System: Page successfully connected to config.js");
-</script>
-
 </body>
 </html>
