@@ -109,7 +109,10 @@ const categoryData = [
             { name: "Chairs", img: "chairs.png" },
             { name: "Beds", img: "beds.png" },
             { name: "Drawers", img: "drawers.png" },
-            { name: "Side Tables", img: "sidetables.png" }
+            { name: "Side Tables", img: "sidetables.png" },
+            {name: "sofa", img:
+            "sofajpg" },
+        
         ]
     },
         {

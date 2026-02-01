@@ -7,32 +7,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; padding-bottom: 100px; }
+        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; padding-bottom: 100px; overflow-x: hidden; }
         
         /* Layout Components */
         .top-nav { position: fixed; top: 0; width: 100%; height: 60px; background: #fff; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #f5f5f5; }
-        .hero-section { width: 100%; padding-top: 60px; background: #fafafa; position: relative; }
-        #main-img { width: 100%; height: auto; max-height: 400px; object-fit: contain; display: block; }
+        
+        /* Slider Styling */
+        .hero-section { width: 100%; padding-top: 60px; background: #fafafa; position: relative; overflow: hidden; }
+        .slider-container { display: flex; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); width: 100%; }
+        .slide { min-width: 100%; display: flex; justify-content: center; align-items: center; height: 400px; background: #fafafa; }
+        .slide img, .slide video { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Branding - Your Polygon Tag */
+        /* Navigation Arrows */
+        .nav-arrow { 
+            position: absolute; top: 55%; transform: translateY(-50%); 
+            background: rgba(0,0,0,0.4); color: white; width: 44px; height: 44px; 
+            border-radius: 50%; display: flex; items-center; justify-content: center; 
+            z-index: 50; cursor: pointer; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);
+        }
+        .arrow-left { left: 15px; }
+        .arrow-right { right: 15px; }
+
+        /* Polygon Tag */
         .discount-tag {
             position: absolute; top: 75px; left: 0; background: #ff5252; color: white;
             font-size: 10px; font-weight: 900; padding: 5px 12px 5px 18px;
-            clip-path: polygon(100% 0%, 85% 50%, 100% 100%, 0% 100%, 0% 0%); z-index: 10;
+            clip-path: polygon(100% 0%, 85% 50%, 100% 100%, 0% 100%, 0% 0%); z-index: 60;
         }
 
-        /* Pricing - Black New / Red Old */
+        /* Pricing */
         .price-now { color: #000; font-weight: 900; font-size: 26px; }
         .price-was { color: #000; text-decoration: line-through; text-decoration-color: #ff5252; font-size: 16px; margin-left: 8px; opacity: 0.6; }
+
+        /* Interactive Buttons */
+        .opt-btn { border: 1.5px solid #e5e7eb; padding: 10px 20px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .opt-btn.active { border-color: #000; background: #000; color: #fff; }
 
         /* Action Buttons */
         .footer-actions { position: fixed; bottom: 0; width: 100%; background: #fff; padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; z-index: 2000; }
         .btn-cart { flex: 1; border: 1.5px solid #000; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 12px; height: 55px; display: flex; align-items: center; justify-content: center; }
         .btn-buy { flex: 1.5; background: #000; color: #fff; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 12px; height: 55px; display: flex; align-items: center; justify-content: center; }
         
-        /* Store Lock Message */
         #locked-msg { position: fixed; bottom: 0; width: 100%; background: #f0f0f0; color: #888; padding: 20px; text-align: center; font-weight: 800; display: none; z-index: 2001; }
-        
         .similar-item img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #f9f9f9; border-radius: 8px; }
     </style>
 </head>
@@ -41,11 +57,21 @@
     <nav class="top-nav">
         <button onclick="history.back()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
         <div class="font-black tracking-tighter text-lg uppercase">Zobuy</div>
-        <div class="w-6"></div> </nav>
+        <div class="w-6"></div> 
+    </nav>
 
     <div class="hero-section">
         <div id="save-badge" class="discount-tag">SAVE ₹0</div>
-        <img id="main-img" src="https://via.placeholder.com/500" alt="Product">
+        
+        <div id="slider" class="slider-container">
+            </div>
+
+        <button class="nav-arrow arrow-left" onclick="moveSlide(-1)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="nav-arrow arrow-right" onclick="moveSlide(1)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
     </div>
 
     <main class="p-5">
@@ -57,14 +83,16 @@
             <span id="price-original" class="price-was">₹0</span>
         </div>
 
+        <div id="interactive-container" class="space-y-6 mb-8">
+            </div>
+
         <div class="bg-gray-50 p-4 rounded-xl mb-8">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Description</p>
             <p id="item-desc" class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">---</p>
         </div>
 
         <h3 class="font-bold text-sm mb-4">Recommended for you</h3>
-        <div id="similar-box" class="grid grid-cols-3 gap-3">
-            </div>
+        <div id="similar-box" class="grid grid-cols-3 gap-3"></div>
     </main>
 
     <div id="action-dock" class="footer-actions">
@@ -83,11 +111,11 @@
         const params = new URLSearchParams(window.location.search);
         const pid = params.get('id');
         let currentUser = null;
+        let currentSlide = 0;
+        let totalSlides = 0;
+        let selectedOptions = {};
 
-        // Auth Monitor
-        firebase.auth().onAuthStateChanged(user => {
-            currentUser = user;
-        });
+        firebase.auth().onAuthStateChanged(user => { currentUser = user; });
 
         async function loadPage() {
             if(!pid) return window.location.href = "homepage.html";
@@ -96,34 +124,81 @@
             if(!doc.exists) return;
             const data = doc.data();
 
-            // Store Lock Check
-            const seller = await db.collection("seller_settings").doc(data.sellerId).get();
-            if(seller.exists && seller.data().isLocked) {
-                document.getElementById('action-dock').style.display = 'none';
-                document.getElementById('locked-msg').style.display = 'block';
+            // 1. IMAGE & VIDEO SLIDER LOGIC
+            const slider = document.getElementById('slider');
+            let sliderHTML = '';
+            
+            // Add all images
+            if(data.allImages && data.allImages.length > 0) {
+                data.allImages.forEach(img => {
+                    sliderHTML += `<div class="slide"><img src="${img}"></div>`;
+                });
+            } else if (data.imageURL) {
+                sliderHTML += `<div class="slide"><img src="${data.imageURL}"></div>`;
             }
 
-            // UI Data Mapping
-            document.getElementById('main-img').src = data.imageURL;
+            // Add video if exists
+            if(data.video) {
+                sliderHTML += `<div class="slide"><video src="${data.video}" autoplay muted loop playsinline></video></div>`;
+            }
+
+            slider.innerHTML = sliderHTML;
+            totalSlides = document.querySelectorAll('.slide').length;
+
+            // 2. PRODUCT INFO
             document.getElementById('item-title').innerText = data.name;
             document.getElementById('item-desc').innerText = data.description;
+            document.getElementById('price-current').innerText = "₹" + data.price;
             
-            const salePrice = data.price - (data.discount || 0);
-            document.getElementById('price-current').innerText = "₹" + salePrice;
-            
-            if(data.discount > 0) {
-                document.getElementById('price-original').innerText = "₹" + data.price;
-                document.getElementById('save-badge').innerText = "SAVE ₹" + data.discount;
+            if(data.oldPrice && data.oldPrice > data.price) {
+                document.getElementById('price-original').innerText = "₹" + data.oldPrice;
+                document.getElementById('save-badge').innerText = "SAVE ₹" + (data.oldPrice - data.price);
             } else {
                 document.getElementById('price-original').style.display = 'none';
                 document.getElementById('save-badge').style.display = 'none';
             }
 
-            // Store Info
-            const store = await db.collection("users").doc(data.sellerId).get();
-            document.getElementById('store-name').innerText = store.data()?.storeName || "Vendor";
+            // 3. INTERACTIVE OPTIONS (PARENT/CHILD)
+            const container = document.getElementById('interactive-container');
+            if (data.interactiveOptions) {
+                let optionsHTML = '';
+                data.interactiveOptions.forEach(group => {
+                    optionsHTML += `
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">${group.label}</p>
+                            <div class="flex flex-wrap gap-2">
+                                ${group.options.map(opt => `
+                                    <button class="opt-btn" onclick="selectOption(this, '${group.label}', '${opt}')">${opt}</button>
+                                `).join('')}
+                            </div>
+                        </div>`;
+                });
+                container.innerHTML = optionsHTML;
+            }
 
-            fetchSimilar(data.sellerId);
+            // Store Checks
+            const sId = data.sellerId || data.vendorUid;
+            if(sId) {
+                const seller = await db.collection("seller_settings").doc(sId).get();
+                if(seller.exists && seller.data().isLocked) {
+                    document.getElementById('action-dock').style.display = 'none';
+                    document.getElementById('locked-msg').style.display = 'block';
+                }
+                const store = await db.collection("users").doc(sId).get();
+                document.getElementById('store-name').innerText = store.data()?.storeName || "Vendor";
+                fetchSimilar(sId);
+            }
+        }
+
+        function moveSlide(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            document.getElementById('slider').style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+
+        function selectOption(btn, label, value) {
+            btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedOptions[label] = value;
         }
 
         async function fetchSimilar(sid) {
@@ -131,12 +206,10 @@
             let html = '';
             snap.forEach(d => {
                 if(d.id !== pid) {
-                    html += `
-                        <a href="item-view.html?id=${d.id}" class="similar-item">
-                            <img src="${d.data().imageURL}">
-                            <p class="text-[9px] font-bold mt-1 truncate">${d.data().name}</p>
-                        </a>
-                    `;
+                    html += `<a href="item-view.html?id=${d.id}" class="similar-item">
+                        <img src="${d.data().imageURL || d.data().image}">
+                        <p class="text-[9px] font-bold mt-1 truncate">${d.data().name}</p>
+                    </a>`;
                 }
             });
             document.getElementById('similar-box').innerHTML = html;
@@ -144,9 +217,7 @@
 
         function handleBuyNow() {
             if(!currentUser) {
-                // Save target product and redirect to signin
                 sessionStorage.setItem('pendingBuy', pid);
-                alert("Please sign in to complete your purchase");
                 window.location.href = "signin.html";
             } else {
                 window.location.href = `check_out.html?id=${pid}`;
@@ -154,9 +225,8 @@
         }
 
         function addToCart() {
-            // Basic LocalStorage Cart Logic
             let cart = JSON.parse(localStorage.getItem('zobuy_cart') || "[]");
-            cart.push({id: pid, name: document.getElementById('item-title').innerText});
+            cart.push({ id: pid, name: document.getElementById('item-title').innerText, options: selectedOptions });
             localStorage.setItem('zobuy_cart', JSON.stringify(cart));
             alert("Added to cart!");
         }

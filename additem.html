@@ -3,93 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Category - Zobuy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Zobuy Admin - Pick Category</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .category-card:active { transform: scale(0.95); }
-        .sub-container { display: none; } /* Hidden until main category is clicked */
+        :root { --zobuy-green: #1a4d2e; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background: #fff; color: #333; }
+        
+        .header { padding: 25px 20px; text-align: center; border-bottom: 1px solid #eee; }
+        .header h2 { margin: 0; font-size: 1.3rem; font-weight: 800; color: var(--zobuy-green); }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .cat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+        
+        .icon-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .cat-name { font-size: 11px; font-weight: 600; text-transform: capitalize; }
+
+        .back-btn {
+            display: none;
+            margin: 15px 20px 0;
+            padding: 10px 20px;
+            background: var(--zobuy-green);
+            border-radius: 30px;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .error-msg {
+            grid-column: span 4;
+            color: red;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
 
-    <div class="max-w-md mx-auto min-h-screen p-4">
-        <div class="flex items-center mb-6">
-            <i class="fa fa-arrow-left text-xl mr-4" onclick="history.back()"></i>
-            <h1 class="text-xl font-bold">What are you selling?</h1>
-        </div>
+<div class="header">
+    <h2 id="pickerTitle">Product Category</h2>
+</div>
 
-        <div id="mainGrid" class="grid grid-cols-2 gap-4">
-            </div>
+<button class="back-btn" id="backBtn" onclick="showMainCategories()">
+    <i class="fa fa-arrow-left"></i> Back
+</button>
 
-        <div id="subListWrapper" class="sub-container mt-4">
-            <button onclick="showMainGrid()" class="text-blue-600 mb-4 flex items-center">
-                <i class="fa fa-chevron-left mr-2 text-sm"></i> Back to Categories
-            </button>
-            <h2 id="selectedMainName" class="text-lg font-bold mb-4 text-gray-800"></h2>
-            <div id="subGrid" class="space-y-2">
-                </div>
-        </div>
-    </div>
+<div class="category-grid" id="categoryGrid">
+    <p class="error-msg">Loading categories...</p>
+</div>
 
-    <script>
-        const categoryData = [
-            { id: "gaming", name: "Gaming Centre", sidebarImg: "gamingcenter.png", subs: [{ name: "BGMI Account" }, { name: "MLBB Account" }, { name: "Gaming kits" }] },
-            { id: "electronics", name: "Electronics", sidebarImg: "electronic.jpg", subs: [{ name: "Phones" }, { name: "Earphones" }, { name: "Earbuds" }, { name: "Laptops" }, { name: "Cables" }, { name: "light" }, { name: "led lights" }, { name: "phone case" }, { name: "fridge" }, { name: "headphones" }, { name: "fan" }, { name: "tv" }] },
-            { id: "men-fashion", name: "Men Fashion", sidebarImg: "men.jpg", subs: [{ name: "Shirts" }, { name: "Pants" }, { name: "Sneakers" }, { name: "man suit" }, { name: "mens crocs" }, { name: "mens slippers" }, { name: "smart shoes" }, { name: "shorts" }, { name: "mens Jacket" }, { name: "men's accessories" }, { name: " men's sportwears" }, { name: "men's undergarments" }] },
-            { id: "women-fashion", name: "Women Fashion", sidebarImg: "women.jpg", subs: [{ name: "Shirts" }, { name: "Pants" }, { name: "women's short" }, { name: "women's accessories" }, { name: "women's suit" }, { name: "women's slippers" }, { name: "women's sneakers" }, { name: "heels" }, { name: "handbags" }, { name: " women's crocs" }, { name: "women's undergarments" }, { name: "women's sportwears" }] },
-            { id: "kids-fashion", name: "Kids Fashion", sidebarImg: "kidsfashion.png", subs: [{ name: "Kids Shirts" }, { name: "Pants" }, { name: "Shorts" }, { name: "Shoes" }, { name: "Bags" }, { name: "Sweaters" }, { name: "Hoodies" }, { name: "Toys" }, { name: "kids accessories " }] },
-            { id: "furniture", name: "Furniture", sidebarImg: "furniture.jpg", subs: [{ name: "Tables" }, { name: "Chairs" }, { name: "Beds" }, { name: "Drawers" }, { name: "Side Tables" }] },
-            { id: "cosmetics", name: "Cosmetics", sidebarImg: "cosmetic.jpg", subs: [{ name: "body lotion" }] }
-        ];
+<script src="categories-data.js"></script>
 
-        const mainGrid = document.getElementById('mainGrid');
-        const subListWrapper = document.getElementById('subListWrapper');
-        const subGrid = document.getElementById('subGrid');
-        const selectedMainName = document.getElementById('selectedMainName');
+<script>
+    const grid = document.getElementById('categoryGrid');
+    const title = document.getElementById('pickerTitle');
+    const backBtn = document.getElementById('backBtn');
 
-        // Load Main Categories
-        function loadMain() {
-            categoryData.forEach(cat => {
-                const card = `
-                    <div onclick="selectMain('${cat.id}')" class="category-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center cursor-pointer">
-                        <img src="assets/icons/${cat.sidebarImg}" class="w-12 h-12 mb-2 object-contain" onerror="this.src='https://via.placeholder.com/50'">
-                        <span class="text-sm font-semibold">${cat.name}</span>
-                    </div>
-                `;
-                mainGrid.innerHTML += card;
-            });
+    function showMainCategories() {
+        // SAFETY CHECK: If categoryData doesn't exist, show an error
+        if (typeof categoryData === 'undefined') {
+            grid.innerHTML = `<div class="error-msg">
+                <b>Error:</b> Data not found!<br>
+                Make sure your file is named <b>categories-data.js</b> <br>
+                and is in the same folder as this file.
+            </div>`;
+            return;
         }
 
-        function selectMain(catId) {
-            const category = categoryData.find(c => c.id === catId);
-            selectedMainName.innerText = category.name;
-            subGrid.innerHTML = '';
+        backBtn.style.display = 'none';
+        title.innerText = "Product Category";
+        grid.innerHTML = '';
+
+        categoryData.forEach((cat, index) => {
+            const item = document.createElement('div');
+            item.className = 'cat-item';
+            item.onclick = () => showSubCategories(index);
             
-            category.subs.forEach(sub => {
-                subGrid.innerHTML += `
-                    <div onclick="goToAddPage('${category.name}', '${sub.name}')" class="bg-white p-4 rounded-lg border border-gray-200 flex justify-between items-center active:bg-gray-50">
-                        <span class="font-medium text-gray-700">${sub.name}</span>
-                        <i class="fa fa-chevron-right text-gray-300 text-sm"></i>
+            item.innerHTML = `
+                <div class="icon-circle">
+                    <img src="${cat.sidebarImg}" onerror="this.src='https://via.placeholder.com/70?text=Error'">
+                </div>
+                <div class="cat-name">${cat.name}</div>
+            `;
+            grid.appendChild(item);
+        });
+    }
+
+    function showSubCategories(mainIndex) {
+        const selectedMain = categoryData[mainIndex];
+        backBtn.style.display = 'block';
+        title.innerText = selectedMain.name;
+        grid.innerHTML = '';
+
+        if (selectedMain.subs) {
+            selectedMain.subs.forEach(sub => {
+                const item = document.createElement('div');
+                item.className = 'cat-item';
+                item.onclick = () => {
+                    // This creates a combined string like "Furniture - Sofa"
+                    const fullCategoryPath = `${selectedMain.name} - ${sub.name}`;
+                    // This takes you to add.html with the full info
+                    window.location.href = `add.html?category=${encodeURIComponent(fullCategoryPath)}`;
+                };
+                
+                item.innerHTML = `
+                    <div class="icon-circle">
+                        <img src="${sub.img}" onerror="this.src='https://via.placeholder.com/70?text=Error'">
                     </div>
+                    <div class="cat-name">${sub.name}</div>
                 `;
+                grid.appendChild(item);
             });
-
-            mainGrid.style.display = 'none';
-            subListWrapper.style.display = 'block';
         }
+    }
 
-        function showMainGrid() {
-            mainGrid.style.display = 'grid';
-            subListWrapper.style.display = 'none';
-        }
+    // Run on start
+    window.onload = showMainCategories;
+</script>
 
-        function goToAddPage(main, sub) {
-            // Save selection to URL and move to add.html
-            window.location.href = `add.html?cat=${encodeURIComponent(main)}&sub=${encodeURIComponent(sub)}`;
-        }
-
-        loadMain();
-    </script>
 </body>
 </html>

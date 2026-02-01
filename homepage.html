@@ -50,63 +50,71 @@
         }
         .wishlist-btn.active { color: #ff5252; }
 
-        .discount-tag { position: absolute; top: 10px; left: 10px; background: #ff5252; color: white; font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 700; z-index: 5; }
         .product-info { padding: 12px; }
-        .product-brand { font-weight: 700; font-size: 14px; color: #333; }
-        .product-name { color: #777; font-size: 12px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* HIDE CATEGORY BUT KEEP IN CODE */
+        .product-brand { display: none; }
+
+        /* MAKE PRODUCT NAME BIGGER AND VISIBLE */
+        .product-name { 
+            color: #000; 
+            font-size: 15px; 
+            font-weight: 700; 
+            margin-bottom: 8px; 
+            white-space: normal; 
+            overflow: visible; 
+            line-height: 1.2;
+        }
+
         .price-container { display: flex; align-items: center; gap: 6px; }
-/* Keep current price Black as requested */
-.new-price { 
-    color: #ff5252;              /* Change this to Black */
-    font-weight: 700; 
-    font-size: 15px; 
-}
 
-/* Make only the discount price and the cut-line Red */
-.old-price { 
-    color: #000;             /* Change this to Red */
-    text-decoration: line-through; 
-    text-decoration-color: #ff5252; /* Ensures the 'cut line' is Red */
-    font-size: 12px; 
-}
+        /* Current price Black */
+        .new-price { 
+            color: #ff5252; 
+            font-weight: 700; 
+            font-size: 15px; 
+        }
 
-.discount-tag {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #ff5252;
-    color: white;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 5px 10px 5px 15px;
-    /* This creates the tag shape */
-    clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 15% 50%, 0% 0%);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-}
+        /* Old price and cut-line Red */
+        .old-price { 
+            color: #000; 
+            text-decoration: line-through; 
+            text-decoration-color: #ff5252; 
+            font-size: 12px; 
+        }
 
-/* This creates the 'hole' in the tag */
-.discount-tag::after {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 4px;
-    background: white;
-    border-radius: 50%;
-}
+        .discount-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ff5252;
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 5px 10px 5px 15px;
+            clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 15% 50%, 0% 0%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+        }
 
+        .discount-tag::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+        }
 
-        /* Nav Styles */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 2000; }
         .nav-item { text-align: center; color: #888; text-decoration: none; font-size: 11px; flex: 1; }
         .nav-item i { font-size: 22px; display: block; margin-bottom: 3px; }
         .nav-item.active { color: #ffca28; }
 
-        /* Helper to hide empty sections */
         .hidden-section { display: none; }
     </style>
 </head>
@@ -121,8 +129,7 @@
     </header>
 
     <div class="banner-wrapper" id="banner-section">
-        <div class="banner-container" id="promoBanner">
-            </div>
+        <div class="banner-container" id="promoBanner"></div>
     </div>
 
     <div id="main-content">
@@ -160,14 +167,10 @@
     </nav>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
 <script src="config.js"></script>
 <script src="sorter.js"></script>
-
 
 </body>
 </html>
