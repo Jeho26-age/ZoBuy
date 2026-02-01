@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zobuy - Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --zobuy-green: #000000; --zobuy-bg: #f7f7f7; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--zobuy-bg); padding-bottom: 100px; }
+        
+        .section-card { background: white; padding: 20px; margin-bottom: 8px; }
+        .payment-option { display: flex; align-items: center; padding: 15px; border: 1px solid #eee; border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .payment-option.selected { border-color: #000; background-color: #f9f9f9; }
+        
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+        .total-row { border-top: 1px dashed #ccc; padding-top: 15px; margin-top: 15px; font-weight: 900; font-size: 18px; }
+        
+        /* Bottom Bar */
+        .checkout-bar { position: fixed; bottom: 0; width: 100%; background: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #eee; z-index: 100; }
+        .btn-confirm { background: #ccc; color: white; padding: 14px 28px; border-radius: 10px; font-weight: 800; border: none; transition: 0.3s; pointer-events: none; }
+        .btn-confirm.active { background: #000; pointer-events: auto; cursor: pointer; }
+
+        /* Modal */
+        #addressModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: flex-end; }
+        .modal-body { background: white; width: 100%; padding: 25px; border-radius: 20px 20px 0 0; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-white p-4 flex items-center border-b border-gray-100 sticky top-0 z-50">
+        <i class="fa fa-arrow-left mr-4 cursor-pointer" onclick="history.back()"></i>
+        <h1 class="font-bold text-lg">Order Summary</h1>
+    </div>
+
+    <div class="section-card flex justify-between items-start">
+        <div id="address-display">
+            <p class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2">Deliver To</p>
+            <p id="user-name" class="font-bold text-red-500">Address Not Set</p>
+            <p id="user-address" class="text-sm text-gray-500 leading-tight mt-1">Please provide your details</p>
+            <p id="user-phone" class="text-sm font-bold mt-1"></p>
+        </div>
+        <button onclick="openModal()" class="text-xs font-bold border border-gray-200 px-3 py-1 rounded">EDIT</button>
+    </div>
+
+    <div class="section-card flex gap-4">
+        <img id="item-img" src="" class="w-20 h-20 object-contain bg-gray-50 rounded-lg">
+        <div class="flex-1">
+            <h2 id="item-name" class="font-bold text-sm">Loading item...</h2>
+            <div class="mt-2">
+                <span id="item-price" class="font-black text-lg">₹0</span>
+                <span id="item-old-price" class="text-xs text-gray-400 line-through ml-2">₹0</span>
+            </div>
+            <p id="seller-info" class="text-[10px] text-gray-400 uppercase mt-1 font-bold italic tracking-wider">Sold by: ---</p>
+        </div>
+    </div>
+
+    <div class="section-card">
+        <p class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-4">Payment Method</p>
+        
+        <label class="payment-option" id="opt-gpay">
+            <input type="radio" name="pay-method" value="UPI" class="mr-3 accent-black" onchange="updatePayment('UPI')">
+            <div class="flex-1">
+                <p class="font-bold text-sm">GPay / PhonePe / UPI</p>
+                <p class="text-[10px] text-gray-400">Pay securely via any UPI app</p>
+            </div>
+            <i class="fa-brands fa-google-pay text-2xl"></i>
+        </label>
+
+        <label class="payment-option" id="opt-cod">
+            <input type="radio" name="pay-method" value="COD" class="mr-3 accent-black" onchange="updatePayment('COD')">
+            <div class="flex-1">
+                <p class="font-bold text-sm">Cash on Delivery</p>
+                <p class="text-[10px] text-gray-400">Pay when you receive the order</p>
+            </div>
+        </label>
+    </div>
+
+    <div class="section-card mb-20">
+        <p class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-4">Bill Details</p>
+        <div class="price-row"><span>Item Total</span><span id="bill-total">₹0</span></div>
+        <div class="price-row text-green-600"><span>Discount</span><span id="bill-discount">- ₹0</span></div>
+        <div class="price-row" id="delivery-row"><span>Delivery Charges</span><span id="bill-delivery">FREE</span></div>
+        <div class="total-row flex justify-between">
+            <span>Amount to Pay</span>
+            <span id="final-amount">₹0</span>
+        </div>
+    </div>
+
+    <div class="checkout-bar">
+        <div class="flex flex-col">
+            <span id="bar-price" class="font-black text-xl">₹0</span>
+            <span class="text-[10px] text-green-600 font-bold uppercase tracking-tight">Price Verified</span>
+        </div>
+        <button id="mainBtn" onclick="placeOrder()" class="btn-confirm">PLACE ORDER</button>
+    </div>
+
+    <div id="addressModal">
+        <div class="modal-body">
+            <h2 class="font-black text-lg mb-4">Delivery Details</h2>
+            <input type="text" id="in-name" placeholder="Full Name" class="w-full border p-3 rounded-lg mb-3">
+            <input type="tel" id="in-phone" placeholder="10-digit Phone Number" class="w-full border p-3 rounded-lg mb-3">
+            <textarea id="in-full-addr" placeholder="House No, Building, Street, Area..." class="w-full border p-3 rounded-lg mb-3 h-20"></textarea>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="in-district" placeholder="District" class="flex-1 border p-3 rounded-lg">
+                <select id="in-state" class="flex-1 border p-3 rounded-lg">
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Assam">Assam</option>
+                </select>
+            </div>
+            <button onclick="saveAddress()" class="w-full bg-black text-white p-4 rounded-xl font-bold uppercase tracking-widest">SAVE & CONTINUE</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="config.js"></script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const pid = params.get('id');
+        let selectedPay = "";
+        let isAddrSet = false;
+        let productData = null;
+        let totalToPay = 0;
+
+        // 1. Fetch Item Details & Handle Price Math
+        async function fetchProduct() {
+            if(!pid) { window.location.href="homepage.html"; return; }
+            const doc = await db.collection("products").doc(pid).get();
+            if(!doc.exists) return;
+            
+            productData = doc.data();
+            
+            // Logic for Pricing
+            const basePrice = Number(productData.price);
+            const discount = Number(productData.discount || 0);
+            const deliveryCharge = Number(productData.deliveryPrice || 0); // Checks for delivery price
+            
+            totalToPay = (basePrice - discount) + deliveryCharge;
+
+            // Update UI
+            document.getElementById('item-img').src = productData.imageURL;
+            document.getElementById('item-name').innerText = productData.name;
+            document.getElementById('item-price').innerText = "₹" + (basePrice - discount);
+            document.getElementById('item-old-price').innerText = "₹" + basePrice;
+            
+            document.getElementById('bill-total').innerText = "₹" + basePrice;
+            document.getElementById('bill-discount').innerText = "- ₹" + discount;
+            
+            // Delivery UI Update
+            const deliveryEl = document.getElementById('bill-delivery');
+            if(deliveryCharge > 0) {
+                deliveryEl.innerText = "+ ₹" + deliveryCharge;
+                deliveryEl.classList.remove('text-green-600');
+            } else {
+                deliveryEl.innerText = "FREE";
+                deliveryEl.classList.add('text-green-600');
+            }
+
+            document.getElementById('final-amount').innerText = "₹" + totalToPay;
+            document.getElementById('bar-price').innerText = "₹" + totalToPay;
+            
+            // 2. Fix: Pull Seller Name correctly
+            const sellerDoc = await db.collection("users").doc(productData.sellerId).get();
+            if(sellerDoc.exists) {
+                const sData = sellerDoc.data();
+                // Priority: storeName -> username -> name -> Fallback
+                const displayName = sData.storeName || sData.username || sData.name || "Authorized Seller";
+                document.getElementById('seller-info').innerText = "Sold by: " + displayName;
+            }
+        }
+
+        // 3. Auth & Address Management
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                const userDoc = await db.collection("users").doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().address) {
+                    const ad = userDoc.data().address;
+                    updateAddressUI(ad.name, ad.phone, ad.full);
+                }
+            } else {
+                // If not logged in, they can't be here
+                window.location.href = "signin.html";
+            }
+        });
+
+        function updateAddressUI(name, phone, full) {
+            document.getElementById('user-name').innerText = name;
+            document.getElementById('user-name').style.color = "black";
+            document.getElementById('user-address').innerText = full;
+            document.getElementById('user-phone').innerText = "Phone: " + phone;
+            isAddrSet = true;
+            checkReady();
+        }
+
+        function openModal() { document.getElementById('addressModal').style.display = 'flex'; }
+        
+        async function saveAddress() {
+            const name = document.getElementById('in-name').value;
+            const phone = document.getElementById('in-phone').value;
+            const full = document.getElementById('in-full-addr').value;
+            
+            if(!name || !phone || !full) return alert("Please fill in all details");
+
+            const user = firebase.auth().currentUser;
+            const completeAddress = `${full}, ${document.getElementById('in-district').value}, ${document.getElementById('in-state').value}`;
+            const addrObj = { name, phone, full: completeAddress };
+            
+            await db.collection("users").doc(user.uid).set({ address: addrObj }, { merge: true });
+            
+            updateAddressUI(name, phone, completeAddress);
+            document.getElementById('addressModal').style.display = 'none';
+        }
+
+        // 4. Interaction Logic
+        function updatePayment(val) {
+            selectedPay = val;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById(val === 'UPI' ? 'opt-gpay' : 'opt-cod').classList.add('selected');
+            checkReady();
+        }
+
+        function checkReady() {
+            const btn = document.getElementById('mainBtn');
+            if(isAddrSet && selectedPay !== "") {
+                btn.classList.add('active');
+            }
+        }
+
+        async function placeOrder() {
+            const user = firebase.auth().currentUser;
+            const orderData = {
+                userId: user.uid,
+                productId: pid,
+                sellerId: productData.sellerId,
+                productName: productData.name,
+                productImage: productData.imageURL,
+                amount: totalToPay,
+                paymentMethod: selectedPay,
+                status: "Pending",
+                customerName: document.getElementById('user-name').innerText,
+                customerPhone: document.getElementById('user-phone').innerText,
+                customerAddress: document.getElementById('user-address').innerText,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                const orderRef = await db.collection("orders").add(orderData);
+                
+                if(selectedPay === 'UPI') {
+                    // Triggers UPI Apps on phone
+                    const upiLink = `upi://pay?pa=j3642833@oksbi&pn=Zobuy&am=${totalToPay}&cu=INR&tn=Order_${orderRef.id}`;
+                    window.location.href = upiLink;
+                } else {
+                    alert("Order Placed via COD!");
+                    window.location.href = "account.html";
+                }
+            } catch(e) {
+                alert("Error placing order. Please try again.");
+            }
+        }
+
+        fetchProduct();
+    </script>
+</body>
+</html>

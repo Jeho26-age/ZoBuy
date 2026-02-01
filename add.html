@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - Zobuy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Security Gatekeeper - Hide body until check is done */
+        body { display: none; }
+        
+        /* Your original slot styling */
+        .media-slot { 
+            width: 100px; 
+            height: 100px; 
+            border: 2px dashed #ccc; 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+            overflow: hidden; 
+            background: #fff; 
+        }
+        .media-slot img, .media-slot video { width: 100%; height: 100%; object-fit: cover; }
+        .remove-btn { 
+            position: absolute; 
+            top: 0; 
+            right: 0; 
+            background: red; 
+            color: white; 
+            width: 20px; 
+            height: 20px; 
+            font-size: 12px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer;
+        }
+        
+        /* Success Popup Styling */
+        #successPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            z-index: 1000;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const mainCat = params.get('cat');
+        const subCat = params.get('sub');
+
+        if (!mainCat || !subCat) {
+            window.location.href = "item.html";
+        } else {
+            document.body.style.display = "block";
+        }
+    </script>
+
+    <div class="max-w-md mx-auto p-6">
+        <div class="flex items-center mb-6">
+            <i class="fa fa-arrow-left mr-4" onclick="history.back()"></i>
+            <div>
+                <h1 class="text-xl font-bold">Add Details</h1>
+                <p id="categoryPath" class="text-xs text-blue-600 font-bold uppercase tracking-wider"></p>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label class="block font-bold mb-2">Upload Photos (Max 3) & Video (Max 1)</label>
+            <div class="flex flex-wrap gap-2">
+                <div id="imgPreviewContainer" class="flex gap-2">
+                    <div class="media-slot" onclick="document.getElementById('pImg').click()">
+                        <i class="fa fa-camera text-2xl text-gray-300"></i>
+                    </div>
+                </div>
+                <div id="vidPreviewContainer">
+                    <div class="media-slot" onclick="document.getElementById('pVid').click()">
+                        <i class="fa fa-video text-2xl text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <input type="file" id="pImg" class="hidden" accept="image/*" multiple onchange="handleImgs(event)">
+            <input type="file" id="pVid" class="hidden" accept="video/*" onchange="handleVid(event)">
+        </div>
+
+        <div class="space-y-4">
+            <input type="text" id="pName" placeholder="Product Name" class="w-full p-4 bg-gray-50 rounded-xl outline-none border border-transparent focus:border-black">
+            
+            <div class="flex gap-2">
+                <input type="number" id="pPrice" placeholder="Original Price (₹)" class="w-1/2 p-4 bg-gray-50 rounded-xl outline-none">
+                <input type="number" id="pDiscount" placeholder="Discount Value (₹)" class="w-1/2 p-4 bg-gray-50 rounded-xl outline-none">
+            </div>
+
+            <input type="number" id="pDelivery" placeholder="Delivery Charge (0 for Free)" class="w-full p-4 bg-gray-50 rounded-xl outline-none">
+            
+            <textarea id="pDesc" rows="4" placeholder="Describe the item (Condition, Size, etc.)" class="w-full p-4 bg-gray-50 rounded-xl outline-none"></textarea>
+        </div>
+
+        <button onclick="saveItem()" id="saveBtn" class="w-full bg-black text-white p-5 rounded-2xl font-bold mt-8 shadow-lg active:scale-95 transition-all">POST ITEM</button>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <div id="successPopup">
+        <i class="fa fa-check-circle text-green-500 text-5xl mb-4"></i>
+        <h2 class="text-xl font-bold mb-2">Success!</h2>
+        <p class="text-gray-600 mb-6">Product is successfully published.</p>
+        <button onclick="window.location.href='index.html'" class="bg-black text-white px-8 py-2 rounded-lg font-bold">OK</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="config.js"></script>
+
+    <script>
+        document.getElementById('categoryPath').innerText = `${mainCat} > ${subCat}`;
+        
+        let imgFiles = [];
+        let vidFile = null;
+
+        function handleImgs(e) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (imgFiles.length < 3) imgFiles.push(file);
+            });
+            renderMedia();
+        }
+
+        function handleVid(e) {
+            vidFile = e.target.files[0];
+            renderMedia();
+        }
+
+        function renderMedia() {
+            const imgContainer = document.getElementById('imgPreviewContainer');
+            imgContainer.innerHTML = '';
+            imgFiles.forEach((file, i) => {
+                imgContainer.innerHTML += `
+                    <div class="media-slot">
+                        <img src="${URL.createObjectURL(file)}">
+                        <div class="remove-btn" onclick="imgFiles.splice(${i},1);renderMedia()">X</div>
+                    </div>`;
+            });
+            if(imgFiles.length < 3) {
+                imgContainer.innerHTML += `<div class="media-slot" onclick="document.getElementById('pImg').click()"><i class="fa fa-camera text-gray-300"></i></div>`;
+            }
+
+            const vidContainer = document.getElementById('vidPreviewContainer');
+            if(vidFile) {
+                vidContainer.innerHTML = `
+                    <div class="media-slot">
+                        <video src="${URL.createObjectURL(vidFile)}"></video>
+                        <div class="remove-btn" onclick="vidFile=null;renderMedia()">X</div>
+                    </div>`;
+            } else {
+                vidContainer.innerHTML = `<div class="media-slot" onclick="document.getElementById('pVid').click()"><i class="fa fa-video text-gray-300"></i></div>`;
+            }
+        }
+
+        async function saveItem() {
+            const user = firebase.auth().currentUser;
+            if(!user) return alert("Please Login");
+
+            const name = document.getElementById('pName').value;
+            const price = document.getElementById('pPrice').value;
+            const btn = document.getElementById('saveBtn');
+
+            if(imgFiles.length === 0 || !name || !price) return alert("Fill required fields!");
+
+            btn.innerText = "Publishing...";
+            btn.disabled = true;
+
+            try {
+                // Upload Images
+                let imageUrls = [];
+                for(let file of imgFiles) {
+                    const ref = firebase.storage().ref(`products/${Date.now()}_${file.name}`);
+                    await ref.put(file);
+                    imageUrls.push(await ref.getDownloadURL());
+                }
+
+                // Upload Video
+                let videoUrl = "";
+                if(vidFile) {
+                    const vRef = firebase.storage().ref(`products/${Date.now()}_video`);
+                    await vRef.put(vidFile);
+                    videoUrl = await vRef.getDownloadURL();
+                }
+
+                // Save to DB
+                await db.collection("products").add({
+                    sellerId: user.uid,
+                    mainCategory: mainCat,
+                    subCategory: subCat,
+                    name: name,
+                    originalPrice: Number(price),
+                    discountValue: Number(document.getElementById('pDiscount').value) || 0,
+                    delivery: Number(document.getElementById('pDelivery').value) || 0,
+                    desc: document.getElementById('pDesc').value,
+                    images: imageUrls,
+                    video: videoUrl,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Show Popup
+                document.getElementById('overlay').style.display = 'block';
+                document.getElementById('successPopup').style.display = 'block';
+
+            } catch(e) {
+                alert("Error: " + e.message);
+                btn.innerText = "POST ITEM";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
