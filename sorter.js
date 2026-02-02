@@ -1,8 +1,6 @@
 /**
- * ZoBuy Sorter Engine - V2 (Corrected)
+ * ZoBuy Sorter Engine - V2 (Corrected Click Logic)
  */
-
-// Removed duplicate 'db' declaration to prevent crash
 
 let allProducts = []; 
 
@@ -86,28 +84,30 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
     }
 });
 
-// --- 4. WISHLIST & CLICK VIEW (Updated for Dynamic Tags) ---
+// --- 4. WISHLIST & CLICK VIEW ---
 function buildCard(p) {
     const wishlist = JSON.parse(localStorage.getItem('myWishlist') || '[]');
     const isLiked = wishlist.includes(p.id) ? 'active' : '';
 
-    // --- NEW: Calculate the real percentage for your tag design ---
     let discountBadge = '';
     if (p.oldPrice && p.oldPrice > p.price) {
         const percent = Math.round(((p.oldPrice - p.price) / p.oldPrice) * 100);
         discountBadge = `<div class="discount-tag">${percent}% OFF</div>`;
     }
 
+    // Escaping the category path to prevent single-quote errors
+    const safeCategory = p.categoryPath ? p.categoryPath.replace(/'/g, "\\'") : '';
+
     return `
-        <div class="product-card">
+        <div class="product-card" onclick="viewProduct('${p.id}', '${safeCategory}')">
             <div class="product-image">
                 ${discountBadge} 
                 <div class="wishlist-btn ${isLiked}" onclick="toggleWishlist(event, '${p.id}')">
                     <i class="fa fa-heart"></i>
                 </div>
-                <img src="${p.imageURL}" onclick="viewProduct('${p.id}', '${p.categoryPath}')">
+                <img src="${p.imageURL}">
             </div>
-            <div class="product-info" onclick="viewProduct('${p.id}', '${p.categoryPath}')">
+            <div class="product-info">
                 <div class="product-brand">${p.categoryPath}</div>
                 <div class="product-name">${p.name}</div>
                 <div class="price-container">
@@ -140,6 +140,7 @@ function toggleWishlist(event, productId) {
 }
 
 function viewProduct(id, category) {
+    if (!id) return;
     localStorage.setItem('userInterest', category); 
     window.location.href = `item-view.html?id=${id}`;
 }

@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* --- KEEPING YOUR EXACT DESIGN --- */
+        /* --- CORE DESIGN --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: #fcfcfc; padding-bottom: 100px; }
 
@@ -32,82 +32,31 @@
         .banner { min-width: 100%; height: 180px; border-radius: 20px; scroll-snap-align: center; position: relative; overflow: hidden; display: flex; background: #333; }
         .banner img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
         .banner-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.7), transparent); z-index: 2; padding: 25px; display: flex; flex-direction: column; justify-content: center; color: white; }
-        .promo-badge { position: absolute; top: 15px; right: 20px; background: rgba(255,255,255,0.3); backdrop-filter: blur(5px); padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 700; z-index: 3; }
 
         /* Grid Styles */
         .section-title { padding: 25px 15px 12px 15px; font-size: 19px; font-weight: 700; color: #1a1a1a; }
         .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 15px; }
         
-        .product-card { background: white; border-radius: 15px; border: 1px solid #f0f0f0; overflow: hidden; position: relative; }
+        .product-card { background: white; border-radius: 15px; border: 1px solid #f0f0f0; overflow: hidden; position: relative; cursor: pointer; }
         .product-image { background: #f9f9f9; height: 160px; display: flex; align-items: center; justify-content: center; position: relative; }
         .product-image img { max-width: 75%; max-height: 75%; object-fit: contain; }
         
-        .wishlist-btn {
-            position: absolute; top: 10px; right: 10px; z-index: 10;
-            background: white; width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #ccc; transition: 0.3s;
-        }
-        .wishlist-btn.active { color: #ff5252; }
+        .product-info { padding: 12px; position: relative; }
 
-        .product-info { padding: 12px; }
-
-        /* HIDE CATEGORY BUT KEEP IN CODE */
-        .product-brand { display: none; }
-
-        /* MAKE PRODUCT NAME BIGGER AND VISIBLE */
         .product-name { 
-            color: #000; 
-            font-size: 15px; 
-            font-weight: 700; 
-            margin-bottom: 8px; 
-            white-space: normal; 
-            overflow: visible; 
-            line-height: 1.2;
+            color: #000; font-size: 15px; font-weight: 700; margin-bottom: 8px; 
+            white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2;
         }
 
         .price-container { display: flex; align-items: center; gap: 6px; }
-
-        /* Current price Black */
-        .new-price { 
-            color: #ff5252; 
-            font-weight: 700; 
-            font-size: 15px; 
-        }
-
-        /* Old price and cut-line Red */
-        .old-price { 
-            color: #000; 
-            text-decoration: line-through; 
-            text-decoration-color: #ff5252; 
-            font-size: 12px; 
-        }
+        .new-price { color: #000; font-weight: 700; font-size: 15px; }
+        .old-price { color: #ff5252; text-decoration: line-through; font-size: 12px; }
 
         .discount-tag {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #ff5252;
-            color: white;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 5px 10px 5px 15px;
-            clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 15% 50%, 0% 0%);
-            z-index: 10;
-            display: flex;
-            align-items: center;
-        }
-
-        .discount-tag::after {
-            content: '';
-            position: absolute;
-            left: 4px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 4px;
-            background: white;
-            border-radius: 50%;
+            position: absolute; top: 10px; left: 10px; background: #ff5252; color: white;
+            font-size: 11px; font-weight: 800; padding: 5px 10px 5px 15px;
+            clip-path: polygon(100% 0%, 100% 100%, 0% 100%, 15% 50%, 0% 0%); z-index: 10;
         }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 2000; }
@@ -168,9 +117,104 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 <script src="config.js"></script>
-<script src="sorter.js"></script>
 
+<script>
+    // Removed 'const db' to prevent "already declared" error from config.js
+    
+    async function init() {
+        const params = new URLSearchParams(window.location.search);
+        const filterValue = params.get('filter');
+
+        if (filterValue) {
+            document.getElementById('banner-section').style.display = 'none';
+            await renderFilteredResults(filterValue);
+        } else {
+            loadBanners();
+            loadSections();
+        }
+    }
+
+    async function renderFilteredResults(filterValue) {
+        const mainContent = document.getElementById('main-content');
+        mainContent.innerHTML = `
+            <div class="section-title">Results for: ${filterValue}</div>
+            <div class="product-grid" id="filter-grid"></div>
+        `;
+        const grid = document.getElementById('filter-grid');
+
+        // Note: Using 'db' which is already initialized in your config.js
+        const snapshot = await db.collection("products")
+            .where("subcategory", "==", filterValue)
+            .get();
+
+        if (snapshot.empty) {
+            grid.innerHTML = `<p style="padding:20px; color:#888;">No items found.</p>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            grid.innerHTML += generateCardHTML(doc.id, doc.data());
+        });
+    }
+
+    async function loadSections() {
+        const sections = [
+            { q: db.collection("products").where("tags", "array-contains", "foryou"), g: "foryou-grid", c: "foryou-container" },
+            { q: db.collection("products").orderBy("createdAt", "desc").limit(8), g: "new-grid", c: "new-container" },
+            { q: db.collection("products").where("tags", "array-contains", "discount"), g: "discount-grid", c: "discount-container" },
+            { q: db.collection("products").where("tags", "array-contains", "trending"), g: "trending-grid", c: "trending-container" },
+            { q: db.collection("products").where("tags", "array-contains", "best"), g: "best-grid", c: "best-container" }
+        ];
+
+        for (const sec of sections) {
+            const snap = await sec.q.get();
+            if (!snap.empty) {
+                document.getElementById(sec.c).classList.remove('hidden-section');
+                const grid = document.getElementById(sec.g);
+                snap.forEach(doc => {
+                    grid.innerHTML += generateCardHTML(doc.id, doc.data());
+                });
+            }
+        }
+    }
+
+    function generateCardHTML(id, data) {
+        const discount = data.oldPrice ? Math.round(((data.oldPrice - data.price) / data.oldPrice) * 100) : 0;
+        return `
+            <div class="product-card" onclick="window.location.href='item-view.html?id=${id}'">
+                ${discount > 0 ? `<div class="discount-tag">${discount}% OFF</div>` : ''}
+                <div class="product-image">
+                    <img src="${data.imageURL || data.image}" alt="${data.name}">
+                </div>
+                <div class="product-info">
+                    <div class="product-name">${data.name}</div>
+                    <div class="price-container">
+                        <span class="new-price">₹${data.price}</span>
+                        ${data.oldPrice ? `<span class="old-price">₹${data.oldPrice}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    async function loadBanners() {
+        const bannerContainer = document.getElementById('promoBanner');
+        const snap = await db.collection("banners").get();
+        snap.forEach(doc => {
+            const b = doc.data();
+            bannerContainer.innerHTML += `
+                <div class="banner">
+                    <img src="${b.image}" alt="Promo">
+                    <div class="banner-overlay"><h2>${b.title || ''}</h2></div>
+                </div>
+            `;
+        });
+    }
+
+    init();
+</script>
 </body>
 </html>
