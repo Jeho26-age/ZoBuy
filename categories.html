@@ -189,9 +189,14 @@
         const gridEl = document.getElementById('subcategory-grid');
         const titleEl = document.getElementById('panel-title');
 
-        // Navigates to homepage with the filter query
-        function handleSubClick(subName) {
-            window.location.href = "homepage.html?filter=" + encodeURIComponent(subName);
+        /**
+         * UPDATED: Navigates to homepage using the full category path.
+         * Since your database saves items as "Main Category - Subcategory",
+         * we must pass the same full string for the filter to work.
+         */
+        function handleSubClick(mainName, subName) {
+            const fullPath = mainName + " - " + subName;
+            window.location.href = "homepage.html?filter=" + encodeURIComponent(fullPath);
         }
 
         function renderSubCategories(index) {
@@ -200,9 +205,10 @@
             gridEl.innerHTML = ""; 
 
             category.subs.forEach(sub => {
-                const item = document.createElement('div'); // Using div for better control
+                const item = document.createElement('div');
                 item.className = "sub-item";
-                item.onclick = () => handleSubClick(sub.name);
+                // Pass both parent name and sub name to create the match
+                item.onclick = () => handleSubClick(category.name, sub.name);
                 
                 item.innerHTML = `
                     <div class="sub-img-box">

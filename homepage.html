@@ -82,6 +82,11 @@
     </div>
 
     <div id="main-content">
+        <div id="filter-container" class="hidden-section">
+            <div class="section-title" id="filter-title">Results</div>
+            <div class="product-grid" id="filter-grid"></div>
+        </div>
+
         <div id="foryou-container" class="hidden-section">
             <div class="section-title">For You</div>
             <div class="product-grid" id="foryou-grid"></div>
@@ -122,13 +127,12 @@
 <script src="config.js"></script>
 
 <script>
-    // Removed 'const db' to prevent "already declared" error from config.js
-    
     async function init() {
         const params = new URLSearchParams(window.location.search);
         const filterValue = params.get('filter');
 
         if (filterValue) {
+            // If filtering, hide everything else and show results
             document.getElementById('banner-section').style.display = 'none';
             await renderFilteredResults(filterValue);
         } else {
@@ -138,16 +142,15 @@
     }
 
     async function renderFilteredResults(filterValue) {
-        const mainContent = document.getElementById('main-content');
-        mainContent.innerHTML = `
-            <div class="section-title">Results for: ${filterValue}</div>
-            <div class="product-grid" id="filter-grid"></div>
-        `;
+        document.getElementById('filter-container').classList.remove('hidden-section');
+        document.getElementById('filter-title').innerText = "Results for: " + filterValue;
         const grid = document.getElementById('filter-grid');
 
-        // Note: Using 'db' which is already initialized in your config.js
+        // Logic: Matches "categoryPath" starting with the filter string
+        // This handles "Women Fashion" finding "Women Fashion - Handbag"
         const snapshot = await db.collection("products")
-            .where("subcategory", "==", filterValue)
+            .where("categoryPath", ">=", filterValue)
+            .where("categoryPath", "<=", filterValue + "\uf8ff")
             .get();
 
         if (snapshot.empty) {
@@ -161,12 +164,13 @@
     }
 
     async function loadSections() {
+        // Updated to use 'sectionTag' field as per your Firestore structure
         const sections = [
-            { q: db.collection("products").where("tags", "array-contains", "foryou"), g: "foryou-grid", c: "foryou-container" },
+            { q: db.collection("products").where("sectionTag", "==", "foryou"), g: "foryou-grid", c: "foryou-container" },
             { q: db.collection("products").orderBy("createdAt", "desc").limit(8), g: "new-grid", c: "new-container" },
-            { q: db.collection("products").where("tags", "array-contains", "discount"), g: "discount-grid", c: "discount-container" },
-            { q: db.collection("products").where("tags", "array-contains", "trending"), g: "trending-grid", c: "trending-container" },
-            { q: db.collection("products").where("tags", "array-contains", "best"), g: "best-grid", c: "best-container" }
+            { q: db.collection("products").where("sectionTag", "==", "discount"), g: "discount-grid", c: "discount-container" },
+            { q: db.collection("products").where("sectionTag", "==", "trending"), g: "trending-grid", c: "trending-container" },
+            { q: db.collection("products").where("sectionTag", "==", "best"), g: "best-grid", c: "best-container" }
         ];
 
         for (const sec of sections) {
@@ -187,7 +191,7 @@
             <div class="product-card" onclick="window.location.href='item-view.html?id=${id}'">
                 ${discount > 0 ? `<div class="discount-tag">${discount}% OFF</div>` : ''}
                 <div class="product-image">
-                    <img src="${data.imageURL || data.image}" alt="${data.name}">
+                    <img src="${data.imageURL || data.image || 'placeholder.png'}" alt="${data.name}">
                 </div>
                 <div class="product-info">
                     <div class="product-name">${data.name}</div>

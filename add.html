@@ -118,7 +118,10 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const selectedCategory = urlParams.get('category') || "Uncategorized";
-    document.getElementById('catIndicator').innerText = "Category: " + selectedCategory;
+    const selectedSubcategory = urlParams.get('subcategory') || ""; // FIXED: Capture subcategory from URL
+    
+    // UI Update to show full path at top
+    document.getElementById('catIndicator').innerText = "Category: " + selectedCategory + (selectedSubcategory ? " - " + selectedSubcategory : "");
 
     const firebaseConfig = {
         apiKey: "AIzaSyBSKCAAu4BRhYwOmDoStr7WtkV0YCcQlS8",
@@ -216,14 +219,13 @@
 
     // Modal Controls
     function showModal() { document.getElementById('successModal').style.display = 'flex'; }
-    function closeModal() { window.location.href = 'add.html?category=' + selectedCategory; }
+    function closeModal() { window.location.href = 'add.html?category=' + selectedCategory + '&subcategory=' + selectedSubcategory; }
 
     async function publishData() {
         const publishBtn = document.getElementById('publishBtn');
         const pName = document.getElementById('pName').value;
         const vidFile = document.getElementById('mainVid').files[0];
 
-        // LOGIC FOR SORTER.JS COMPATIBILITY
         const currentPrice = Number(document.getElementById('pPrice').value) || 0;
         const discountAmt = Number(document.getElementById('pDiscount').value) || 0;
         const originalPrice = currentPrice + discountAmt;
@@ -254,22 +256,24 @@
                 if(label && options.length > 0) interactiveOptions.push({ label, options });
             });
 
-            // UPDATED DATA OBJECT TO MATCH HOMEPAGE REQUIREMENTS
+            // UPDATED: Now saving subcategory separately to allow homepage filtering
             await db.collection("products").add({
                 name: pName,
-                categoryPath: selectedCategory, // Renamed from 'category'
+                categoryPath: selectedSubcategory ? selectedCategory + " - " + selectedSubcategory : selectedCategory, 
+                mainCategory: selectedCategory,    // Split field for better search
+                subcategory: selectedSubcategory,  // Split field for better search
                 price: currentPrice,
-                oldPrice: originalPrice, // Added for discount calculation
+                oldPrice: originalPrice, 
                 discount: discountAmt,
                 delivery: Number(document.getElementById('pDelivery').value) || 0,
                 description: document.getElementById('pDesc').value,
-                imageURL: uploadedImages[0], // Renamed from 'image'
+                imageURL: uploadedImages[0], 
                 allImages: uploadedImages, 
                 video: videoUrl,
                 interactiveOptions: interactiveOptions,
-                serialNumber: Date.now(), // Added for sorting logic
-                sectionTag: "trending",   // Added so it shows in a row
-                isFeatured: false,        // Added for banner logic
+                serialNumber: Date.now(),
+                sectionTag: "trending",
+                isFeatured: false,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
