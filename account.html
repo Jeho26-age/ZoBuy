@@ -292,7 +292,8 @@
             const userDoc = await db.collection("user_data").doc(user.uid).get();
             if (userDoc.exists) {
                 const data = userDoc.data();
-                document.getElementById('userNameDisplay').innerText = data.storeName || "User";
+                // CHANGED: Display personal name in account, or storeName if fullName is missing
+                document.getElementById('userNameDisplay').innerText = data.fullName || data.storeName || "User";
                 document.getElementById('userPhoneDisplay').innerText = data.phone || "";
                 
                 if (data.profilePic) {
@@ -300,7 +301,7 @@
                     profileImg.style.display = 'block';
                     initialTxt.style.display = 'none';
                 } else {
-                    initialTxt.innerText = (data.storeName || "U").charAt(0).toUpperCase();
+                    initialTxt.innerText = (data.fullName || data.storeName || "U").charAt(0).toUpperCase();
                     initialTxt.style.display = 'block';
                     profileImg.style.display = 'none';
                 }
@@ -343,15 +344,43 @@
         }
     });
 
-    // REPAIRED: This button now sends the user to store.html.
-    // auth-check.js will automatically catch them and send to gateway or renew if needed.
-    document.getElementById('storeActionBtn').addEventListener('click', () => {
+    // UPDATED BRAIN: Checks Plan and Store Profile status
+    document.getElementById('storeActionBtn').addEventListener('click', async () => {
         const user = firebase.auth().currentUser;
         if (!user) {
             window.location.href = "signin.html";
             return;
         }
-        window.location.href = "store.html";
+
+        try {
+            const userDoc = await db.collection("user_data").doc(user.uid).get();
+            if (!userDoc.exists || userDoc.data().hasPlan === false) {
+                window.location.href = "gateway.html";
+                return;
+            }
+
+            const data = userDoc.data();
+
+            // CHECK EXPIRY (Safety check if auth-check hasn't fired yet)
+            if (data.planExpiry) {
+                const expiryTime = new Date(data.planExpiry).getTime();
+                if (Date.now() > expiryTime) {
+                    await db.collection("user_data").doc(user.uid).update({ hasPlan: false });
+                    window.location.href = "gateway.html";
+                    return;
+                }
+            }
+
+            // CHECK STORE SETUP: If info is missing, send to setup page
+            if (!data.storeName || !data.upiId) {
+                window.location.href = "store-setup.html";
+            } else {
+                window.location.href = "store.html";
+            }
+
+        } catch (error) {
+            console.error("Error checking store status:", error);
+        }
     });
 
     function logout() {

@@ -8,98 +8,85 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; margin: 0; padding: 0; min-height: 100vh; }
-        .timer-bar {
-            background: #111; border-bottom: 1px solid #22c55e33;
-            padding: 10px; text-align: center; font-size: 10px;
-            font-weight: 900; letter-spacing: 2px; color: #22c55e; text-transform: uppercase;
-        }
-        .profile-frame { width: 110px; height: 110px; border-radius: 50%; border: 3px solid #22c55e; padding: 4px; position: relative; }
-        .profile-pic { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #111; cursor: pointer; }
-        .panel { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 18px; transition: 0.2s; }
-        .editable-title { background: transparent; border: none; color: #fff; font-weight: 900; font-size: 1.5rem; text-transform: uppercase; text-align: center; outline: none; width: 100%; }
-        #loader-overlay { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        /* Modal Styles */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: #0a0a0a; border: 1px solid #222; width: 100%; max-width: 400px; border-radius: 24px; padding: 24px; }
-        input, select, textarea { background: #111; border: 1px solid #222; color: white; padding: 12px; border-radius: 12px; width: 100%; font-size: 13px; outline: none; }
-        .edit-badge { position: absolute; bottom: 5px; right: 5px; background: #22c55e; color: #000; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .status-bar {
+            background: #111; border-bottom: 1px solid #22c55e33;
+            padding: 8px 15px; display: flex; justify-content: space-between;
+            font-size: 10px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .store-brand { font-size: 3.5rem; font-weight: 900; letter-spacing: -4px; line-height: 0.8; text-transform: uppercase; color: #fff; margin-bottom: 4px; }
+        .plan-label { color: #22c55e; font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+
+        .panel { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 20px; transition: 0.3s; }
+        .panel:hover { border-color: #333; }
+        
+        .search-container { position: relative; width: 220px; margin: 25px auto; }
+        .search-input { 
+            width: 100%; background: #0a0a0a; border: 2px solid #222; border-radius: 14px; 
+            padding: 12px 15px 12px 45px; font-size: 11px; font-weight: 800; color: white; 
+            outline: none; text-transform: uppercase; transition: all 0.3s ease;
+        }
+        .search-input:focus { border-color: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #22c55e; pointer-events: none; }
+
+        #loader-overlay { position: fixed; inset: 0; background: black; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .countdown-text { font-family: monospace; font-weight: 900; letter-spacing: -1px; }
     </style>
 </head>
 <body>
 
     <div id="loader-overlay">
-        <div class="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 text-[10px] font-bold tracking-[3px] text-green-500 uppercase">Syncing Database...</p>
+        <div class="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <div class="timer-bar">
-        Store Closing in: <span id="countdown">SYNCING...</span>
+    <div class="status-bar">
+        <span class="text-green-500">System Live</span>
+        <span id="countdown" class="countdown-text text-white">00D 00H 00M 00S</span>
     </div>
 
-    <nav class="p-6 flex justify-between items-center sticky top-0 bg-black/60 backdrop-blur-md z-50">
-        <a href="account.html" class="text-gray-400">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </a>
-        <div class="flex gap-6">
-            <a href="charts.html" class="text-[10px] font-bold uppercase tracking-widest text-gray-500">Analytics</a>
-            <a href="additem.html" class="text-[10px] font-bold uppercase tracking-widest text-green-500">Add Item</a>
+    <nav class="p-6 flex justify-between items-center sticky top-0 bg-black/90 backdrop-blur-xl z-50">
+        <div class="flex gap-6 items-center">
+            <a href="account.html" class="text-gray-500"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></a>
+            <span class="text-[11px] font-900 uppercase tracking-widest text-white border-b-2 border-green-500 pb-1">Dashboard</span>
+        </div>
+        <div class="flex gap-3 items-center">
+            <a href="sales.html" class="text-[10px] font-900 uppercase tracking-widest text-green-500 bg-green-500/10 px-3 py-1.5 rounded-full border border-green-500/20">Sales</a>
+            <a href="promote.html" class="text-[10px] font-900 uppercase tracking-widest text-blue-500 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20">Promote</a>
+            <a id="editStoreBtn" href="#" class="text-gray-400 hover:text-white transition-colors">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </a>
         </div>
     </nav>
 
-    <main class="flex flex-col items-center pt-4 pb-8">
-        <div class="profile-frame">
-            <img src="https://via.placeholder.com/120" class="profile-pic" id="pfp-display" onclick="document.getElementById('pfp-upload').click()">
-            <label for="pfp-upload" class="edit-badge">✎</label>
-            <input type="file" id="pfp-upload" class="hidden" accept="image/*" onchange="uploadProfilePic(this)">
+    <header class="px-6 py-6 text-center">
+        <h1 id="displayStoreName" class="store-brand">LOADING</h1>
+        <p id="displayPlanName" class="plan-label">FETCHING SUBSCRIPTION...</p>
+        
+        <div class="mt-4">
+            <a href="sales.html" class="text-[9px] font-900 text-zinc-500 border border-zinc-800 px-4 py-2 rounded-full uppercase tracking-widest hover:bg-zinc-900 transition-all">View Revenue History</a>
         </div>
 
-        <div class="mt-4 text-center">
-            <span id="uid-text" class="text-[10px] font-mono text-gray-600 tracking-tighter uppercase">Loading ID...</span>
-            <p id="item-count" class="text-[9px] font-black text-green-500 mt-1 uppercase tracking-widest">0 Items in Stock</p>
+        <div class="search-container">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="searchInput" onkeyup="searchItems()" placeholder="Search Products" class="search-input">
         </div>
+    </header>
 
-        <div class="flex items-center justify-center gap-3 mt-4 px-4 w-full max-w-xs">
-            <input type="text" class="editable-title" value="MY STORE" id="storeName" onblur="updateStoreName(this.value)">
-        </div>
+    <main class="p-6 space-y-12">
+        <section id="pendingSection">
+            <p class="text-[10px] font-900 text-zinc-600 uppercase tracking-[4px] mb-4">Live Orders</p>
+            <div id="orders-list" class="space-y-4"></div>
+        </section>
 
-        <section class="w-full p-6 mt-6 space-y-4">
-            <p class="text-[10px] font-black text-gray-700 uppercase tracking-[3px] mb-4">Inventory Feed</p>
-            <div id="inventory-list" class="space-y-4">
-                <p class="text-center text-gray-800 text-xs py-10">Fetching items...</p>
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-[10px] font-900 text-zinc-600 uppercase tracking-[4px]">Inventory</p>
+                <a href="additem.html" class="text-green-500 font-900 text-[11px] uppercase border border-green-500/20 px-3 py-1 rounded-lg bg-green-500/5">Add New</a>
             </div>
+            <div id="inventory-list" class="space-y-3"></div>
         </section>
     </main>
-
-    <div id="editModal" class="modal">
-        <div class="modal-content space-y-4">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-xs font-black uppercase tracking-widest text-green-500">Edit Product</h2>
-                <button onclick="closeModal()" class="text-gray-500">&times;</button>
-            </div>
-            
-            <input type="hidden" id="edit-id">
-            
-            <div>
-                <label class="text-[9px] text-gray-500 uppercase font-bold ml-1">Product Name</label>
-                <input type="text" id="edit-name">
-            </div>
-            
-            <div>
-                <label class="text-[9px] text-gray-500 uppercase font-bold ml-1">Price (₹)</label>
-                <input type="number" id="edit-price">
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 pt-2">
-                <button id="stock-btn" onclick="toggleStock()" class="text-[9px] font-black p-3 rounded-xl uppercase bg-zinc-900 border border-zinc-800">Toggle Stock</button>
-                <button onclick="goToFullEdit()" class="text-[9px] font-black p-3 rounded-xl uppercase bg-blue-600 text-white">Full Edit</button>
-            </div>
-
-            <button onclick="saveProduct()" class="w-full bg-green-500 text-black font-black py-3 rounded-xl text-xs uppercase tracking-widest">Save Quick Changes</button>
-            
-            <button onclick="deleteProduct()" class="w-full bg-transparent border border-red-900/50 text-red-500 font-bold py-3 rounded-xl text-[10px] uppercase">Delete Permanently</button>
-        </div>
-    </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -107,147 +94,138 @@
     <script src="config.js"></script>
 
     <script>
-        let countdownInterval;
-        let currentEditingStatus = true;
-
         firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                initStore(user);
-            } else {
-                window.location.href = "signin.html";
-            }
+            if (user) { 
+                document.getElementById('editStoreBtn').href = `edit-store.html?uid=${user.uid}`;
+                initDashboard(user); 
+            } else { window.location.href = "signin.html"; }
         });
 
-        async function initStore(user) {
+        async function initDashboard(user) {
             try {
-                document.getElementById('uid-text').innerText = `ID: ZB-${user.uid.substring(0,8).toUpperCase()}`;
-                
                 const userDoc = await db.collection("user_data").doc(user.uid).get();
                 if(userDoc.exists) {
                     const data = userDoc.data();
-                    document.getElementById('storeName').value = data.storeName || "MY STORE";
-                    document.getElementById('storeName').readOnly = false; // Allow editing
-                    if(data.profilePic) document.getElementById('pfp-display').src = data.profilePic;
-                    if(data.planExpiry) initTimer(data.planExpiry);
-                }
+                    document.getElementById('displayStoreName').innerText = data.storeName || "MY STORE";
+                    
+                    if (data.planName && data.planName.trim() !== "") {
+                        document.getElementById('displayPlanName').innerText = data.planName + " PLAN";
+                    } else if (data.hasPlan === true) {
+                        document.getElementById('displayPlanName').innerText = "PREMIUM MERCHANT";
+                    } else {
+                        document.getElementById('displayPlanName').innerText = "NO ACTIVE PLAN";
+                    }
 
+                    if(data.planExpiry) startTimer(data.planExpiry);
+                }
+                await loadOrders(user.uid);
                 await loadInventory(user.uid);
                 document.getElementById('loader-overlay').style.display = 'none';
-            } catch (error) { console.error(error); }
+            } catch (e) { console.error(e); }
         }
 
-        async function uploadProfilePic(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64Img = e.target.result;
-                document.getElementById('pfp-display').src = base64Img;
-                const user = firebase.auth().currentUser;
-                await db.collection("user_data").doc(user.uid).set({ profilePic: base64Img }, { merge: true });
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function updateStoreName(val) {
-            const user = firebase.auth().currentUser;
-            if(user) await db.collection("user_data").doc(user.uid).set({ storeName: val }, { merge: true });
-        }
-
-        async function loadInventory(uid) {
-            const listContainer = document.getElementById('inventory-list');
-            try {
-                const snapshot = await db.collection("products").where("sellerId", "==", uid).get();
-                document.getElementById('item-count').innerText = `${snapshot.size} Items in Stock`;
-
-                if (snapshot.empty) {
-                    listContainer.innerHTML = '<p class="text-center text-gray-500 text-xs py-10 uppercase tracking-widest">Inventory Empty</p>';
-                    return;
-                }
-
-                listContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const item = doc.data();
-                    const isOut = item.status === "out_of_stock";
-                    
-                    listContainer.innerHTML += `
-                        <div class="panel p-5 flex items-center justify-between ${isOut ? 'opacity-50' : ''}">
-                            <div class="flex items-center gap-4">
-                                <div class="relative">
-                                    <img src="${item.imageURL || 'https://via.placeholder.com/50'}" class="w-12 h-12 bg-zinc-900 rounded-xl object-cover">
-                                    ${isOut ? '<span class="absolute inset-0 flex items-center justify-center bg-red-600/80 text-[6px] font-black rounded-xl">OUT</span>' : ''}
-                                </div>
-                                <div>
-                                    <h3 class="text-xs font-bold uppercase">${item.name || 'Product'}</h3>
-                                    <p class="text-[9px] text-green-500 font-bold">₹${item.price || '0'}</p>
-                                </div>
-                            </div>
-                            <button onclick="openEditModal('${doc.id}', '${item.name}', '${item.price}', '${item.status}')" class="text-[8px] font-black bg-zinc-800 text-white px-4 py-2 rounded-lg uppercase">Edit</button>
-                        </div>`;
-                });
-            } catch (err) { console.error(err); }
-        }
-
-        function openEditModal(id, name, price, status) {
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-name').value = name;
-            document.getElementById('edit-price').value = price;
-            currentEditingStatus = status !== "out_of_stock";
-            
-            const btn = document.getElementById('stock-btn');
-            btn.innerText = currentEditingStatus ? "MARK OUT OF STOCK" : "MARK AVAILABLE";
-            btn.style.color = currentEditingStatus ? "#ef4444" : "#22c55e";
-            
-            document.getElementById('editModal').style.display = 'flex';
-        }
-
-        function goToFullEdit() {
-            const id = document.getElementById('edit-id').value;
-            window.location.href = `asset_intake.html?edit=${id}`;
-        }
-
-        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-
-        async function toggleStock() {
-            const id = document.getElementById('edit-id').value;
-            const newStatus = currentEditingStatus ? "out_of_stock" : "available";
-            await db.collection("products").doc(id).update({ status: newStatus });
-            location.reload();
-        }
-
-        async function saveProduct() {
-            const id = document.getElementById('edit-id').value;
-            const name = document.getElementById('edit-name').value;
-            const price = parseFloat(document.getElementById('edit-price').value);
-            await db.collection("products").doc(id).update({ name, price });
-            location.reload();
-        }
-
-        async function deleteProduct() {
-            if(confirm("Are you sure? This cannot be undone.")) {
-                const id = document.getElementById('edit-id').value;
-                await db.collection("products").doc(id).delete();
-                location.reload();
-            }
-        }
-
-        function initTimer(expiryDateStr) {
-            const expiry = new Date(expiryDateStr).getTime();
-            if (isNaN(expiry)) return;
-            countdownInterval = setInterval(() => {
-                const distance = expiry - Date.now();
-                if (distance <= 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById('countdown').innerText = "STORE CLOSED";
-                    return;
+        function startTimer(expiryDate) {
+            const countEl = document.getElementById('countdown');
+            function update() {
+                const now = new Date().getTime();
+                const distance = new Date(expiryDate).getTime() - now;
+                if (distance < 0) { 
+                    countEl.innerText = "EXPIRED"; 
+                    countEl.classList.add("text-red-500");
+                    return; 
                 }
                 const d = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const s = Math.floor((distance % (1000 * 60)) / 1000);
-                document.getElementById('countdown').innerText = `${d}D ${h}H ${m}M ${s}S`;
-            }, 1000);
+                countEl.innerText = `${String(d).padStart(2, '0')}D ${String(h).padStart(2, '0')}H ${String(m).padStart(2, '0')}M ${String(s).padStart(2, '0')}S`;
+            }
+            setInterval(update, 1000);
+            update();
+        }
+
+        async function loadOrders(uid) {
+            const list = document.getElementById('orders-list');
+            const snap = await db.collection("orders").where("sellerId", "==", uid).where("status", "==", "pending").get();
+            list.innerHTML = snap.empty ? '<p class="text-zinc-800 text-[10px] font-900 uppercase">No pending orders found</p>' : '';
+            snap.forEach(doc => {
+                const o = doc.data();
+                list.innerHTML += `
+                <div class="panel p-5 border-l-4 border-green-500 bg-zinc-950/50">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xs font-900 uppercase text-white">${o.productName}</h3>
+                            <p class="text-[9px] text-zinc-500 mt-1 uppercase">Order ID: ${doc.id.slice(0,8)}</p>
+                        </div>
+                        <p class="text-green-400 font-900 text-sm tracking-tighter">₹${o.price}</p>
+                    </div>
+                    <button onclick="updateStatus('${doc.id}','completed')" class="w-full bg-white text-black text-[10px] font-900 py-3 rounded-xl uppercase active:scale-95 transition-transform">Mark Completed</button>
+                </div>`;
+            });
+        }
+
+                        async function loadInventory(uid) {
+            const list = document.getElementById('inventory-list');
+            let snap = await db.collection("products").where("userId", "==", uid).get();
+            
+            if (snap.empty) {
+                snap = await db.collection("products").where("sellerId", "==", uid).get();
+            }
+
+            list.innerHTML = '';
+            
+            if (snap.empty) {
+                list.innerHTML = '<p class="text-zinc-800 text-[10px] font-900 uppercase">No products in inventory</p>';
+                return;
+            }
+
+            snap.forEach(doc => {
+                const i = doc.data();
+                list.innerHTML += `
+                <div class="inventory-card panel p-4 flex items-center justify-between bg-zinc-950/30" data-name="${i.name}">
+                    <div class="flex items-center gap-4">
+                        <div class="relative w-12 h-12">
+                             <img src="${i.imageURL || i.image}" class="w-full h-full rounded-xl object-cover bg-zinc-900 border border-zinc-800">
+                        </div>
+                        <div>
+                            <h4 class="text-[11px] font-900 uppercase tracking-tight text-zinc-200">${i.name}</h4>
+                            <p class="text-[9px] font-700 text-zinc-600 uppercase">Stock: ${i.stock || '0'}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex flex-col items-end">
+                            <p class="text-xs font-900 text-white">₹${i.price}</p>
+                            <div class="flex gap-3 mt-2">
+                                <a href="add.html?edit=${doc.id}" class="text-[9px] text-blue-500 font-900 uppercase">Edit</a>
+                                <button onclick="deleteProduct('${doc.id}')" class="text-[9px] text-red-500 font-900 uppercase">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+
+        function searchItems() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.inventory-card').forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                item.style.display = name.includes(query) ? "flex" : "none";
+            });
+        }
+
+        async function deleteProduct(id) {
+            if(confirm("Are you sure you want to delete this product?")) {
+                await db.collection("products").doc(id).delete();
+                location.reload();
+            }
+        }
+        
+        async function updateStatus(id, status) {
+            try {
+                await db.collection("orders").doc(id).update({ status: status });
+                location.reload();
+            } catch(e) { alert("Error updating status"); }
         }
     </script>
 </body>

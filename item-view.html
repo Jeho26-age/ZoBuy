@@ -7,47 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; padding-bottom: 100px; overflow-x: hidden; }
-        
-        /* Layout Components */
+        body { font-family: 'Inter', sans-serif; background-color: #fff; color: #000; padding-bottom: 120px; overflow-x: hidden; }
         .top-nav { position: fixed; top: 0; width: 100%; height: 60px; background: #fff; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #f5f5f5; }
-        
-        /* Slider Styling */
         .hero-section { width: 100%; padding-top: 60px; background: #fafafa; position: relative; overflow: hidden; }
         .slider-container { display: flex; transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); width: 100%; }
         .slide { min-width: 100%; display: flex; justify-content: center; align-items: center; height: 400px; background: #fafafa; }
         .slide img, .slide video { max-width: 100%; max-height: 100%; object-fit: contain; }
-
-        /* Navigation Arrows */
-        .nav-arrow { 
-            position: absolute; top: 55%; transform: translateY(-50%); 
-            background: rgba(0,0,0,0.4); color: white; width: 44px; height: 44px; 
-            border-radius: 50%; display: flex; items-center; justify-content: center; 
-            z-index: 50; cursor: pointer; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2);
-        }
+        .nav-arrow { position: absolute; top: 55%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 50; cursor: pointer; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); }
         .arrow-left { left: 15px; }
         .arrow-right { right: 15px; }
-
-        /* Polygon Tag */
-        .discount-tag {
-            position: absolute; top: 75px; left: 0; background: #ff5252; color: white;
-            font-size: 10px; font-weight: 900; padding: 5px 12px 5px 18px;
-            clip-path: polygon(100% 0%, 85% 50%, 100% 100%, 0% 100%, 0% 0%); z-index: 60;
-        }
-
-        /* Pricing */
+        .discount-tag { position: absolute; top: 75px; left: 0; background: #ff5252; color: white; font-size: 10px; font-weight: 900; padding: 5px 12px 5px 18px; clip-path: polygon(100% 0%, 85% 50%, 100% 100%, 0% 100%, 0% 0%); z-index: 60; }
         .price-now { color: #000; font-weight: 900; font-size: 26px; }
         .price-was { color: #000; text-decoration: line-through; text-decoration-color: #ff5252; font-size: 16px; margin-left: 8px; opacity: 0.6; }
-
-        /* Interactive Buttons */
         .opt-btn { border: 1.5px solid #e5e7eb; padding: 10px 20px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
         .opt-btn.active { border-color: #000; background: #000; color: #fff; }
-
-        /* Action Buttons */
+        .delivery-card { background: #f9f9f9; border-radius: 16px; padding: 16px; margin-bottom: 24px; border: 1px dashed #ddd; }
+        .delivery-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .delivery-row:last-child { border-bottom: none; }
         .footer-actions { position: fixed; bottom: 0; width: 100%; background: #fff; padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; z-index: 2000; }
         .btn-cart { flex: 1; border: 1.5px solid #000; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 12px; height: 55px; display: flex; align-items: center; justify-content: center; }
         .btn-buy { flex: 1.5; background: #000; color: #fff; border-radius: 12px; font-weight: 700; text-transform: uppercase; font-size: 12px; height: 55px; display: flex; align-items: center; justify-content: center; }
-        
         #locked-msg { position: fixed; bottom: 0; width: 100%; background: #f0f0f0; color: #888; padding: 20px; text-align: center; font-weight: 800; display: none; z-index: 2001; }
         .similar-item img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #f9f9f9; border-radius: 8px; }
     </style>
@@ -62,10 +41,7 @@
 
     <div class="hero-section">
         <div id="save-badge" class="discount-tag">SAVE ₹0</div>
-        
-        <div id="slider" class="slider-container">
-            </div>
-
+        <div id="slider" class="slider-container"></div>
         <button class="nav-arrow arrow-left" onclick="moveSlide(-1)">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
@@ -75,16 +51,22 @@
     </div>
 
     <main class="p-5">
-        <p id="store-name" class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Store Name</p>
-        <h1 id="item-title" class="text-xl font-bold mb-3 leading-tight">Product Title Loading...</h1>
+        <p id="store-name" class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Loading Store...</p>
+        <h1 id="item-title" class="text-xl font-bold mb-3 leading-tight">---</h1>
         
         <div class="flex items-center mb-6">
             <span id="price-current" class="price-now">₹0</span>
             <span id="price-original" class="price-was">₹0</span>
         </div>
 
-        <div id="interactive-container" class="space-y-6 mb-8">
+        <div class="delivery-card">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Delivery Available At</p>
+            <div id="delivery-list" class="text-xs font-semibold">
+                <div class="text-gray-400 italic">Checking delivery areas...</div>
             </div>
+        </div>
+
+        <div id="interactive-container" class="space-y-6 mb-8"></div>
 
         <div class="bg-gray-50 p-4 rounded-xl mb-8">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Description</p>
@@ -97,7 +79,7 @@
 
     <div id="action-dock" class="footer-actions">
         <div class="btn-cart" onclick="addToCart()">Add to cart</div>
-        <div class="btn-buy" onclick="handleBuyNow()">Buy Now</div>
+        <div id="buy-btn" class="btn-buy" onclick="handleBuyNow()">Buy Now</div>
     </div>
 
     <div id="locked-msg">STORE IS CURRENTLY CLOSED</div>
@@ -106,6 +88,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="config.js"></script>
+    <script src="store-data.js"></script>
 
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -114,81 +97,99 @@
         let currentSlide = 0;
         let totalSlides = 0;
         let selectedOptions = {};
+        let productData = null;
 
         firebase.auth().onAuthStateChanged(user => { currentUser = user; });
 
-        async function loadPage() {
+                async function loadPage() {
             if(!pid) return window.location.href = "homepage.html";
 
-            const doc = await db.collection("products").doc(pid).get();
-            if(!doc.exists) return;
-            const data = doc.data();
+            try {
+                const doc = await db.collection("products").doc(pid).get();
+                if(!doc.exists) return;
+                productData = doc.data();
+                const data = productData;
 
-            // 1. IMAGE & VIDEO SLIDER LOGIC
-            const slider = document.getElementById('slider');
-            let sliderHTML = '';
-            
-            // Add all images
-            if(data.allImages && data.allImages.length > 0) {
-                data.allImages.forEach(img => {
-                    sliderHTML += `<div class="slide"><img src="${img}"></div>`;
-                });
-            } else if (data.imageURL) {
-                sliderHTML += `<div class="slide"><img src="${data.imageURL}"></div>`;
-            }
+                // 1. FIX: STORE NAME FETCHING
+                // The upload code saves 'userId', so we check that first.
+                const sId = data.userId || data.sellerId;
+                
+                if(sId) {
+const sName = data.storeName || "Official Vendor";
+document.getElementById('store-name').innerHTML = `<span class="text-black">STORE NAME: </span><span class="text-gray-500">${sName}</span>`;
 
-            // Add video if exists
-            if(data.video) {
-                sliderHTML += `<div class="slide"><video src="${data.video}" autoplay muted loop playsinline></video></div>`;
-            }
-
-            slider.innerHTML = sliderHTML;
-            totalSlides = document.querySelectorAll('.slide').length;
-
-            // 2. PRODUCT INFO
-            document.getElementById('item-title').innerText = data.name;
-            document.getElementById('item-desc').innerText = data.description;
-            document.getElementById('price-current').innerText = "₹" + data.price;
-            
-            if(data.oldPrice && data.oldPrice > data.price) {
-                document.getElementById('price-original').innerText = "₹" + data.oldPrice;
-                document.getElementById('save-badge').innerText = "SAVE ₹" + (data.oldPrice - data.price);
-            } else {
-                document.getElementById('price-original').style.display = 'none';
-                document.getElementById('save-badge').style.display = 'none';
-            }
-
-            // 3. INTERACTIVE OPTIONS (PARENT/CHILD)
-            const container = document.getElementById('interactive-container');
-            if (data.interactiveOptions) {
-                let optionsHTML = '';
-                data.interactiveOptions.forEach(group => {
-                    optionsHTML += `
-                        <div>
-                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">${group.label}</p>
-                            <div class="flex flex-wrap gap-2">
-                                ${group.options.map(opt => `
-                                    <button class="opt-btn" onclick="selectOption(this, '${group.label}', '${opt}')">${opt}</button>
-                                `).join('')}
-                            </div>
-                        </div>`;
-                });
-                container.innerHTML = optionsHTML;
-            }
-
-            // Store Checks
-            const sId = data.sellerId || data.vendorUid;
-            if(sId) {
-                const seller = await db.collection("seller_settings").doc(sId).get();
-                if(seller.exists && seller.data().isLocked) {
-                    document.getElementById('action-dock').style.display = 'none';
-                    document.getElementById('locked-msg').style.display = 'block';
+                    // Check Lock Status
+                    db.collection("seller_settings").doc(sId).get().then(setDoc => {
+                        if(setDoc.exists && setDoc.data().isLocked) {
+                            document.getElementById('action-dock').style.display = 'none';
+                            document.getElementById('locked-msg').style.display = 'block';
+                        }
+                    });
+                    fetchSimilar(sId);
                 }
-                const store = await db.collection("users").doc(sId).get();
-                document.getElementById('store-name').innerText = store.data()?.storeName || "Vendor";
-                fetchSimilar(sId);
+
+                // 2. SLIDER LOGIC
+                const slider = document.getElementById('slider');
+                let sliderHTML = '';
+                if(data.allImages && data.allImages.length > 0) {
+                    data.allImages.forEach(img => { sliderHTML += `<div class="slide"><img src="${img}"></div>`; });
+                } else if (data.imageURL) {
+                    sliderHTML += `<div class="slide"><img src="${data.imageURL}"></div>`;
+                }
+                if(data.video) sliderHTML += `<div class="slide"><video src="${data.video}" autoplay muted loop playsinline></video></div>`;
+                slider.innerHTML = sliderHTML;
+                totalSlides = document.querySelectorAll('.slide').length;
+
+                // 3. CONTENT LOGIC
+                document.getElementById('item-title').innerText = data.name;
+                document.getElementById('item-desc').innerText = data.description || "";
+                document.getElementById('price-current').innerText = "₹" + data.price;
+                
+                // Fix: Check 'mrp' instead of 'oldPrice' based on your upload code
+                if(data.mrp && data.mrp > data.price) {
+                    document.getElementById('price-original').innerText = "₹" + data.mrp;
+document.getElementById('save-badge').innerText = "SAVE ₹" + data.price;
+
+                    document.getElementById('price-original').style.display = 'inline';
+                    document.getElementById('save-badge').style.display = 'block';
+                } else {
+                    document.getElementById('price-original').style.display = 'none';
+                    document.getElementById('save-badge').style.display = 'none';
+                }
+
+                // 4. FIX: DELIVERY LOGIC (Matching your new Upload Structure)
+                const dList = document.getElementById('delivery-list');
+                let dHTML = '';
+
+                // Show Local Delivery
+                if(data.localDelivery > 0) {
+                    dHTML += `<div class="delivery-row"><span>Local Delivery</span><span>₹${data.localDelivery}</span></div>`;
+                }
+
+                // Show Sumo/District Delivery
+                if(data.sumoDelivery && Object.keys(data.sumoDelivery).length > 0) {
+                    Object.entries(data.sumoDelivery).forEach(([dist, fee]) => {
+                        dHTML += `<div class="delivery-row"><span>${dist}</span><span>₹${fee}</span></div>`;
+                    });
+                }
+
+                dList.innerHTML = dHTML || "Contact seller for delivery info";
+
+                // 5. INTERACTIVE OPTIONS
+                const container = document.getElementById('interactive-container');
+                if (data.interactiveOptions && data.interactiveOptions.length > 0) {
+                    let optionsHTML = '';
+                    data.interactiveOptions.forEach(group => {
+                        optionsHTML += `<div><p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">${group.label}</p>
+                            <div class="flex flex-wrap gap-2">${group.options.map(opt => `<button class="opt-btn" onclick="selectOption(this, '${group.label}', '${opt}')">${opt}</button>`).join('')}</div></div>`;
+                    });
+                    container.innerHTML = optionsHTML;
+                }
+            } catch (error) {
+                console.error("Error loading page:", error);
             }
         }
+
 
         function moveSlide(direction) {
             currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
@@ -202,26 +203,24 @@
         }
 
         async function fetchSimilar(sid) {
-            const snap = await db.collection("products").where("sellerId", "==", sid).limit(4).get();
+            // Updated to query via userId to match how products are now stored
+            const snap = await db.collection("products").where("userId", "==", sid).limit(4).get();
             let html = '';
             snap.forEach(d => {
                 if(d.id !== pid) {
-                    html += `<a href="item-view.html?id=${d.id}" class="similar-item">
-                        <img src="${d.data().imageURL || d.data().image}">
-                        <p class="text-[9px] font-bold mt-1 truncate">${d.data().name}</p>
-                    </a>`;
+                    html += `<a href="item-view.html?id=${d.id}" class="similar-item"><img src="${d.data().imageURL || d.data().image}"><p class="text-[9px] font-bold mt-1 truncate">${d.data().name}</p></a>`;
                 }
             });
             document.getElementById('similar-box').innerHTML = html;
         }
 
-        function handleBuyNow() {
+        async function handleBuyNow() {
             if(!currentUser) {
                 sessionStorage.setItem('pendingBuy', pid);
                 window.location.href = "signin.html";
-            } else {
-                window.location.href = `check_out.html?id=${pid}`;
+                return;
             }
+            window.location.href = `check_out.html?id=${pid}`;
         }
 
         function addToCart() {

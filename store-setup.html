@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Store - Zobuy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray: #f5f5f5;
+            --border: #e0e0e0;
+            --text-secondary: #666666;
+            --error: #d32f2f;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background-color: var(--white);
+            padding: 20px;
+        }
+
+        .setup-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .header-section {
+            background: #fdfdfd;
+            border-left: 5px solid #22c55e;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        h2 { font-weight: 800; margin: 0 0 10px 0; color: var(--black); }
+        .header-section p { 
+            color: var(--text-secondary); 
+            font-size: 14px; 
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            background: white;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus { border-color: var(--black); }
+
+        .error-text {
+            color: var(--error);
+            font-size: 11px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .finish-btn {
+            width: 100%;
+            padding: 18px;
+            background: #ccc;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 35px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .finish-btn.active {
+            background: var(--black);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #999;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="setup-container">
+    <div class="header-section">
+        <h2>Dawr Info Enphatna</h2>
+        <p>I dawr details i thlak duh te hetah hian i thlak thei ang. I thil thlak te hi Save i hmeh hma chuan a in-update lo vang.</p>
+    </div>
+
+    <div class="form-group">
+        <label>Dawr Hming (Store Name)</label>
+        <input type="text" id="storeName" placeholder="Zobuy Enterprise">
+    </div>
+
+    <div class="form-group">
+        <label>Gpay / UPI ID</label>
+        <input type="text" id="upiId" placeholder="i_hming@okaxis">
+        <div id="upiError" class="error-text">UPI ID hi a dik lo tlat. (Format: hming@upi)</div>
+    </div>
+
+    <div class="form-group">
+        <label>WhatsApp Number</label>
+        <input type="tel" id="whatsapp" placeholder="9876543210">
+    </div>
+
+    <div class="form-group">
+        <label>I awmna District</label>
+        <select id="sellerDistrict">
+            <option value="">-- Thlang rawh --</option>
+            <option>Aizawl</option>
+            <option>Lunglei</option>
+            <option>Siaha</option>
+            <option>Champhai</option>
+            <option>Kolasib</option>
+            <option>Serchhip</option>
+            <option>Lawngtlai</option>
+            <option>Mamit</option>
+            <option>Saitual</option>
+            <option>Khawzawl</option>
+            <option>Hnahthial</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Veng Hming / Colony</label>
+        <input type="text" id="vengHming" placeholder="e.g. Chanmari, Ramhlun South">
+    </div>
+
+    <button id="saveBtn" class="finish-btn">Khawngaihin lo nghak lawk rawh...</button>
+    <a href="store.html" class="cancel-link">Cancel / Let leh rawh</a>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="config.js"></script>
+
+<script>
+    const saveBtn = document.getElementById('saveBtn');
+
+    // 1. Fetch Existing Data
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) { loadStoreData(user.uid); }
+        else { window.location.href = "signin.html"; }
+    });
+
+    async function loadStoreData(uid) {
+        try {
+            const doc = await db.collection("user_data").doc(uid).get();
+            if (doc.exists) {
+                const data = doc.data();
+                document.getElementById('storeName').value = data.storeName || "";
+                document.getElementById('upiId').value = data.upiId || "";
+                document.getElementById('whatsapp').value = data.whatsapp || "";
+                document.getElementById('sellerDistrict').value = data.sellerDistrict || "";
+                document.getElementById('vengHming').value = data.vengHming || "";
+                
+                checkForm();
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    // 2. Logic & Validation
+    function isValidUPI(upi) {
+        return /[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}/.test(upi);
+    }
+
+    function checkForm() {
+        const fields = {
+            storeName: document.getElementById('storeName').value.trim(),
+            upiId: document.getElementById('upiId').value.trim(),
+            whatsapp: document.getElementById('whatsapp').value.trim(),
+            sellerDistrict: document.getElementById('sellerDistrict').value,
+            vengHming: document.getElementById('vengHming').value.trim()
+        };
+        
+        const upiValid = isValidUPI(fields.upiId);
+        document.getElementById('upiError').style.display = (fields.upiId !== "" && !upiValid) ? "block" : "none";
+
+        const isFilled = Object.values(fields).every(v => v) && upiValid;
+
+        if (isFilled) {
+            saveBtn.disabled = false;
+            saveBtn.classList.add('active');
+            saveBtn.innerText = "Update & Save Changes";
+        } else {
+            saveBtn.disabled = true;
+            saveBtn.classList.remove('active');
+            saveBtn.innerText = "Hnawhkhat vek rawh";
+        }
+    }
+
+    ['storeName', 'upiId', 'whatsapp', 'vengHming', 'sellerDistrict'].forEach(id => {
+        document.getElementById(id).addEventListener('input', checkForm);
+    });
+
+    saveBtn.addEventListener('click', async () => {
+        const user = firebase.auth().currentUser;
+        saveBtn.disabled = true;
+        saveBtn.innerText = "Updating...";
+
+        try {
+            await db.collection("user_data").doc(user.uid).update({
+                storeName: document.getElementById('storeName').value.trim(),
+                upiId: document.getElementById('upiId').value.trim(),
+                whatsapp: document.getElementById('whatsapp').value.trim(),
+                sellerDistrict: document.getElementById('sellerDistrict').value,
+                vengHming: document.getElementById('vengHming').value.trim()
+            });
+            window.location.href = "store.html";
+        } catch (e) {
+            alert("Error updating store.");
+            saveBtn.disabled = false;
+            checkForm();
+        }
+    });
+</script>
+</body>
+</html>

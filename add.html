@@ -8,121 +8,112 @@
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
     <style>
-        body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; padding: 15px; }
+        body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; padding: 15px; padding-bottom: 180px; }
         .zobuy-green { background-color: #1a4d2e; }
         .input-label { display: block; font-size: 10px; font-weight: 800; color: #6b7280; text-transform: uppercase; margin-bottom: 4px; }
-        .z-input { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; font-size: 14px; }
-        .media-slot { border: 2px dashed #9ca3af; border-radius: 12px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; background: #fff; }
+        .z-input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; outline: none; font-size: 14px; background: white; }
+        .media-slot { border: 2px dashed #9ca3af; border-radius: 12px; height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; background: #fff; }
         .preview-img, .preview-vid { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 10; }
+        .type-btn { flex: 1; padding: 12px; font-size: 11px; font-weight: 900; text-transform: uppercase; border-radius: 10px; border: 1.5px solid #e5e7eb; background: white; }
+        .type-btn.active { background: #1a4d2e; color: white; border-color: #1a4d2e; }
         .group-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .slot-label { font-size: 9px; font-weight: 900; color: #9ca3af; z-index: 5; text-align: center; }
+        .district-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 10px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+        .child-box { width: 80px; padding: 6px; border: 2px solid #d1d5db; border-radius: 8px; text-align: center; font-weight: 900; color: #1a4d2e; font-size: 12px; }
+        
+        .seller-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #1a4d2e; color: white; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-weight: 700; z-index: 100; border-top: 4px solid #143d24; }
+        .footer-item { border-left: 2px solid rgba(255,255,255,0.15); padding-left: 10px; }
+        .footer-label { opacity: 0.7; text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+        .footer-val { font-size: 10px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* Professional Modal Styling */
-        #successModal { display: none; }
-        .modal-animate { animation: scaleIn 0.3s ease-out forwards; }
-        @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        .editor-bar { background: #e5e7eb; border-radius: 12px 12px 0 0; padding: 8px; display: flex; gap: 6px; border: 1px solid #d1d5db; border-bottom: none; align-items: center; }
+        .editor-select { background: white; border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; font-size: 11px; font-weight: 800; outline: none; width: 100%; text-transform: uppercase; }
+        .editor-textarea { border-radius: 0 0 12px 12px !important; border-top: none !important; }
     </style>
 </head>
 <body>
 
-<div id="successModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-    <div class="bg-white w-full max-w-xs rounded-3xl p-8 text-center shadow-2xl modal-animate border border-gray-100">
-        <div class="w-20 h-20 zobuy-green rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-900/20">
-            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-            </svg>
-        </div>
-        <h3 class="text-xl font-black text-[#1a4d2e] uppercase tracking-tight mb-2">Success!</h3>
-        <p class="text-gray-500 text-sm font-medium mb-8">Your product is now live on Zobuy.</p>
-        <button onclick="closeModal()" class="w-full zobuy-green text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform">
-            Done
-        </button>
+<div id="successModal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-xs rounded-3xl p-8 text-center shadow-2xl">
+        <div class="w-16 h-16 zobuy-green rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl">✓</div>
+        <h3 id="modalTitle" class="text-xl font-black text-[#1a4d2e] uppercase mb-4">Published!</h3>
+        <button onclick="window.location.href='store.html'" class="w-full zobuy-green text-white py-4 rounded-2xl font-black">CONTINUE</button>
     </div>
 </div>
 
-<div class="max-w-lg mx-auto pb-10">
-    <div class="mb-2">
-        <span id="catIndicator" class="text-[10px] font-bold bg-gray-200 text-gray-600 px-3 py-1 rounded-full uppercase tracking-wider">
-            Loading...
-        </span>
-    </div>
+<div class="max-w-lg mx-auto">
+    <div class="mb-4"><span id="catIndicator" class="text-[10px] font-bold bg-gray-200 text-gray-600 px-3 py-1 rounded-full uppercase">...</span></div>
 
-    <h2 class="text-xl font-black mb-6 text-[#1a4d2e] uppercase tracking-tighter border-l-4 border-[#1a4d2e] pl-3">New Product Post</h2>
-
-    <label class="input-label">Media (Select up to 3 Images + 1 Video)</label>
-    <div class="grid grid-cols-4 gap-2 mb-6">
-        <input type="file" id="imageInput" class="hidden" accept="image/*" multiple onchange="handleMultipleImages(this)">
-        
-        <div class="media-slot" onclick="document.getElementById('imageInput').click()" id="slot0">
-            <span class="slot-label">IMG 1<br>(TAP)</span>
-        </div>
-        <div class="media-slot" onclick="document.getElementById('imageInput').click()" id="slot1">
-            <span class="slot-label">IMG 2</span>
-        </div>
-        <div class="media-slot" onclick="document.getElementById('imageInput').click()" id="slot2">
-            <span class="slot-label">IMG 3</span>
-        </div>
-
-        <div class="media-slot border-blue-400 bg-blue-50" onclick="document.getElementById('mainVid').click()">
-            <span class="text-[10px] font-bold text-blue-500 text-center">VIDEO<br>10 SEC</span>
-            <input type="file" id="mainVid" class="hidden" accept="video/*" onchange="handleVideo(this)">
+    <div class="mb-6">
+        <label class="input-label">Item Category</label>
+        <div class="flex gap-2">
+            <button onclick="setProductType('physical')" id="typePhys" class="type-btn active">Physical</button>
+            <button onclick="setProductType('digital')" id="typeDigi" class="type-btn">Digital</button>
         </div>
     </div>
 
     <div class="space-y-4 mb-6">
-        <div>
-            <label class="input-label">Product Name</label>
-            <input type="text" id="pName" placeholder="e.g. Luxury Handbag" class="z-input">
+        <input type="text" id="pName" placeholder="Product Name" class="z-input">
+        <div class="grid grid-cols-2 gap-3">
+            <input type="number" id="pPrice" placeholder="Selling Price (₹)" class="z-input">
+            <input type="number" id="pMRP" placeholder="MRP (₹)" class="z-input">
         </div>
-        <div class="grid grid-cols-2 gap-4">
-            <div>
-                <label class="input-label">Price (₹)</label>
-                <input type="number" id="pPrice" placeholder="0" class="z-input">
-            </div>
-            <div>
-                <label class="input-label">Discount Amount (₹)</label>
-                <input type="number" id="pDiscount" placeholder="0" class="z-input">
-            </div>
+        <input type="number" id="pStock" placeholder="Available Stock" class="z-input">
+
+        <div class="grid grid-cols-4 gap-2">
+            <div class="media-slot" onclick="document.getElementById('img0').click()" id="slot0"><input type="file" id="img0" class="hidden" accept="image/*" onchange="handleMultipleImages(this, 0)"><span class="text-[9px] text-gray-400">IMG 1</span></div>
+            <div class="media-slot" onclick="document.getElementById('img1').click()" id="slot1"><input type="file" id="img1" class="hidden" accept="image/*" onchange="handleMultipleImages(this, 1)"><span class="text-[9px] text-gray-400">IMG 2</span></div>
+            <div class="media-slot" onclick="document.getElementById('img2').click()" id="slot2"><input type="file" id="img2" class="hidden" accept="image/*" onchange="handleMultipleImages(this, 2)"><span class="text-[9px] text-gray-400">IMG 3</span></div>
+            <div class="media-slot border-blue-400 bg-blue-50" onclick="document.getElementById('mainVid').click()" id="vidSlot"><input type="file" id="mainVid" class="hidden" accept="video/*" onchange="handleVideo(this)"><span class="text-[9px] font-bold text-blue-500">VIDEO</span></div>
         </div>
     </div>
 
     <div class="mb-6">
         <div class="flex justify-between items-center mb-2">
-            <label class="input-label">Selection Buttons (Size/Rank)</label>
-            <button onclick="addGroup()" class="bg-[#1a4d2e] text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest">+ Add Label</button>
+            <label class="input-label">Product Options</label>
+            <button onclick="addGroup()" class="bg-[#1a4d2e] text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase">+ Add Group</button>
         </div>
         <div id="dynamicGroups"></div>
     </div>
 
-    <div class="space-y-4">
-        <div>
-            <label class="input-label">Delivery Fee (₹)</label>
-            <input type="number" id="pDelivery" placeholder="0" class="z-input">
-        </div>
-        <div>
-            <label class="input-label">Item Details</label>
-            <textarea id="pDesc" rows="3" class="z-input" placeholder="Type info here..."></textarea>
-        </div>
+    <div id="physicalSection" class="group-card">
+        <label class="input-label">Local Delivery (₹)</label>
+        <input type="number" id="pDelivery" placeholder="0" class="z-input mb-4">
+        <select id="outsideOption" onchange="updateDeliveryUI()" class="z-input font-bold text-xs mb-4">
+            <option value="none">No Outside Delivery</option>
+            <option value="sumo">Sumo Counter</option>
+            <option value="personal">Set per District</option>
+        </select>
+        <div id="districtContainer" class="hidden space-y-2 max-h-48 overflow-y-auto pr-2"></div>
     </div>
 
-    <button id="publishBtn" onclick="publishData()" class="w-full zobuy-green text-white py-4 rounded-xl font-black uppercase tracking-widest mt-8 shadow-lg active:scale-95 transition-transform">
+    <div class="mt-6">
+        <div class="editor-bar">
+            <select id="shapeSelect" class="editor-select" onchange="applyShape(this.value)">
+                <option value="">+ INSERT SYMBOLS</option>
+                <option value="✦">✦ Star</option>
+                <option value="●">● Circle</option>
+                <option value="✅">✅ Check</option>
+            </select>
+        </div>
+        <textarea id="pDesc" rows="4" class="z-input editor-textarea mb-8" placeholder="Description..."></textarea>
+    </div>
+
+    <button id="publishBtn" onclick="publishData()" class="w-full zobuy-green text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl">
         Publish to Zobuy
     </button>
 </div>
 
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedCategory = urlParams.get('category') || "Uncategorized";
-    const selectedSubcategory = urlParams.get('subcategory') || ""; // FIXED: Capture subcategory from URL
-    
-    // UI Update to show full path at top
-    document.getElementById('catIndicator').innerText = "Category: " + selectedCategory + (selectedSubcategory ? " - " + selectedSubcategory : "");
+<div class="seller-footer">
+    <div class="footer-item"><span class="footer-label">Store Name</span><span id="footerStore" class="footer-val">...</span></div>
+    <div class="footer-item"><span class="footer-label">Phone Number</span><span id="footerPhone" class="footer-val">...</span></div>
+    <div class="footer-item"><span class="footer-label">Store Address</span><span id="footerAddress" class="footer-val">...</span></div>
+    <div class="footer-item"><span class="footer-label">Gpay UPI ID</span><span id="footerUpi" class="footer-val">...</span></div>
+</div>
 
+<script>
     const firebaseConfig = {
         apiKey: "AIzaSyBSKCAAu4BRhYwOmDoStr7WtkV0YCcQlS8",
         authDomain: "zobuy-95fdb.firebaseapp.com",
@@ -131,161 +122,239 @@
         messagingSenderId: "1032398475253",
         appId: "1:1032398475253:web:090623a6773539860471b3"
     };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let selectedImageFiles = [];
+    const districts = ["Aizawl", "Lunglei", "Siaha", "Champhai", "Kolasib", "Serchhip", "Lawngtlai", "Mamit", "Saitual", "Khawzawl", "Hnahthial"];
+    let globalSellerData = null;
+    let selectedImageFiles = {};
+    let existingImages = [];
+    let existingVideo = "";
 
-    function handleMultipleImages(input) {
-        const files = Array.from(input.files).slice(0, 3);
-        selectedImageFiles = files; 
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    let isEditMode = !!editId;
 
-        for(let i=0; i<3; i++) {
-            const slot = document.getElementById(`slot${i}`);
-            const existingImg = slot.querySelector('.preview-img');
-            if(existingImg) existingImg.remove();
+    let selectedCategory = urlParams.get('category') || "General";
+    let selectedSubcategory = urlParams.get('subcategory') || "";
+
+    districts.forEach(d => {
+        const div = document.createElement('div');
+        div.className = "district-card";
+        div.innerHTML = `<span class="text-xs font-bold">${d}</span><input type="number" placeholder="₹" data-d="${d}" class="child-box dist-input">`;
+        document.getElementById('districtContainer').appendChild(div);
+    });
+
+    firebase.auth().onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                const doc = await db.collection("user_data").doc(user.uid).get();
+                if (doc.exists) {
+                    globalSellerData = doc.data();
+                    document.getElementById('footerStore').innerText = globalSellerData.storeName || "N/A";
+                    document.getElementById('footerPhone').innerText = globalSellerData.whatsapp || "N/A";
+                    document.getElementById('footerAddress').innerText = globalSellerData.sellerDistrict || "N/A";
+                    document.getElementById('footerUpi').innerText = globalSellerData.upiId || "N/A";
+                }
+                if (isEditMode) loadProductForEdit();
+                else document.getElementById('catIndicator').innerText = `${selectedCategory} > ${selectedSubcategory}`;
+            } catch (e) { console.error(e); }
+        }
+    });
+
+    async function loadProductForEdit() {
+        const doc = await db.collection("products").doc(editId).get();
+        if (!doc.exists) return;
+        const data = doc.data();
+
+        document.getElementById('pName').value = data.name || "";
+        document.getElementById('pPrice').value = data.price || "";
+        document.getElementById('pMRP').value = data.mrp || "";
+        document.getElementById('pStock').value = data.stock || "";
+        document.getElementById('pDesc').value = data.description || "";
+        document.getElementById('pDelivery').value = data.localDelivery || 0;
+        
+        selectedCategory = data.mainCategory;
+        selectedSubcategory = data.subcategory;
+        document.getElementById('catIndicator').innerText = `${selectedCategory} > ${selectedSubcategory}`;
+
+        setProductType(data.isPhysical ? 'physical' : 'digital');
+        
+        if (data.allImages) {
+            existingImages = data.allImages;
+            data.allImages.forEach((url, i) => {
+                if(url) document.getElementById(`slot${i}`).innerHTML = `<img src="${url}" class="preview-img">`;
+            });
         }
 
-        files.forEach((file, index) => {
+        if (data.video) {
+            existingVideo = data.video;
+            const vidSlot = document.getElementById('vidSlot');
+            vidSlot.innerHTML += `<video class="preview-vid" autoplay muted loop src="${data.video}"></video>`;
+        }
+
+        const outOpt = document.getElementById('outsideOption');
+        outOpt.value = data.outsideDeliveryMode || "none";
+        updateDeliveryUI();
+
+        if (data.sumoDelivery) {
+            document.querySelectorAll('.dist-input').forEach(input => {
+                const d = input.getAttribute('data-d');
+                if (data.sumoDelivery[d]) input.value = data.sumoDelivery[d];
+            });
+        }
+
+        if (data.interactiveOptions) {
+            data.interactiveOptions.forEach(opt => {
+                const gid = Date.now() + Math.random();
+                const html = `<div class="group-card" id="g-${gid}">
+                    <div class="flex gap-2 mb-2"><input type="text" value="${opt.label}" class="z-input font-bold text-[10px] g-label"><button onclick="document.getElementById('g-${gid}').remove()">✕</button></div>
+                    <div id="v-${gid}">${opt.options.map(v => `<input type="text" value="${v}" class="z-input text-xs g-value mt-1">`).join('')}</div>
+                    <button onclick="addValue(${gid})" class="text-[9px] font-bold text-blue-600 mt-2">+ Add Value</button>
+                </div>`;
+                document.getElementById('dynamicGroups').insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        document.getElementById('publishBtn').innerText = "UPDATE PRODUCT";
+        document.getElementById('modalTitle').innerText = "Updated!";
+    }
+
+    function applyShape(s) {
+        if(!s) return;
+        const box = document.getElementById('pDesc');
+        box.setRangeText(s + " ", box.selectionStart, box.selectionEnd, 'select');
+        document.getElementById('shapeSelect').value = "";
+    }
+
+    function handleMultipleImages(input, index) {
+        if (input.files[0]) {
+            selectedImageFiles[index] = input.files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
-                const img = document.createElement('img');
-                img.className = "preview-img";
-                img.src = e.target.result;
-                document.getElementById(`slot${index}`).appendChild(img);
+                document.getElementById(`slot${index}`).innerHTML = `<img src="${e.target.result}" class="preview-img">`;
             };
-            reader.readAsDataURL(file);
-        });
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
     function handleVideo(input) {
-        const file = input.files[0];
-        if (file) {
-            const videoElement = document.createElement('video');
-            videoElement.preload = 'metadata';
-            videoElement.onloadedmetadata = function() {
-                window.URL.revokeObjectURL(videoElement.src);
-                if (videoElement.duration > 10.5) {
-                    alert("Video is too long! Max 10s.");
-                    input.value = "";
-                } else {
-                    let preview = input.parentElement.querySelector('.preview-vid');
-                    if(!preview) {
-                        preview = document.createElement('video');
-                        preview.className = "preview-vid";
-                        preview.autoplay = true; preview.muted = true; preview.loop = true;
-                        input.parentElement.appendChild(preview);
-                    }
-                    preview.src = URL.createObjectURL(file);
-                }
-            }
-            videoElement.src = URL.createObjectURL(file);
+        if (input.files[0]) {
+            const preview = document.createElement('video');
+            preview.className = "preview-vid"; preview.autoplay = true; preview.muted = true; preview.loop = true;
+            preview.src = URL.createObjectURL(input.files[0]);
+            input.parentElement.appendChild(preview);
         }
     }
 
     function addGroup() {
-        const groupID = Date.now();
-        const groupHTML = `
-            <div class="group-card" id="group-${groupID}">
-                <div class="flex gap-2 mb-3">
-                    <input type="text" placeholder="Label" class="z-input font-bold uppercase text-xs w-full g-label">
-                    <button onclick="document.getElementById('group-${groupID}').remove()" class="text-red-500 font-bold">×</button>
-                </div>
-                <div id="values-${groupID}" class="space-y-2">
-                    <input type="text" placeholder="Value" class="z-input text-sm g-value">
-                </div>
-                <button onclick="addValue(${groupID})" class="mt-3 text-[10px] font-bold text-blue-600 uppercase">+ Add Value</button>
-            </div>`;
-        document.getElementById('dynamicGroups').insertAdjacentHTML('beforeend', groupHTML);
+        const id = Date.now();
+        const html = `<div class="group-card" id="g-${id}">
+            <div class="flex gap-2 mb-2"><input type="text" placeholder="Label" class="z-input font-bold text-[10px] g-label"><button onclick="document.getElementById('g-${id}').remove()">✕</button></div>
+            <div id="v-${id}"><input type="text" placeholder="Value" class="z-input text-xs g-value"></div>
+            <button onclick="addValue(${id})" class="text-[9px] font-bold text-blue-600 mt-2">+ Add Value</button>
+        </div>`;
+        document.getElementById('dynamicGroups').insertAdjacentHTML('beforeend', html);
     }
 
     function addValue(id) {
         const input = document.createElement('input');
-        input.type = "text";
+        input.className = "z-input text-xs g-value mt-1";
         input.placeholder = "Next Value";
-        input.className = "z-input text-sm g-value mt-2";
-        document.getElementById(`values-${id}`).appendChild(input);
+        document.getElementById(`v-${id}`).appendChild(input);
     }
 
-    async function uploadToCloudinary(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'zobuy_preset');
-        const res = await fetch('https://api.cloudinary.com/v1_1/duj2rx73z/auto/upload', { method: 'POST', body: formData });
+    async function upload(file) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', 'zobuy_preset');
+        const res = await fetch('https://api.cloudinary.com/v1_1/duj2rx73z/auto/upload', { method: 'POST', body: fd });
         const data = await res.json();
         return data.secure_url;
     }
 
-    // Modal Controls
-    function showModal() { document.getElementById('successModal').style.display = 'flex'; }
-    function closeModal() { window.location.href = 'add.html?category=' + selectedCategory + '&subcategory=' + selectedSubcategory; }
-
     async function publishData() {
-        const publishBtn = document.getElementById('publishBtn');
-        const pName = document.getElementById('pName').value;
-        const vidFile = document.getElementById('mainVid').files[0];
-
-        const currentPrice = Number(document.getElementById('pPrice').value) || 0;
-        const discountAmt = Number(document.getElementById('pDiscount').value) || 0;
-        const originalPrice = currentPrice + discountAmt;
-
-        if (!pName || selectedImageFiles.length === 0) {
-            alert("Please provide Name and at least 1 Image");
-            return;
+        const btn = document.getElementById('publishBtn');
+        const name = document.getElementById('pName').value;
+        const price = Number(document.getElementById('pPrice').value);
+        
+        if (!name || !price || (!isEditMode && Object.keys(selectedImageFiles).length === 0)) {
+            return alert("Check name, price, and images!");
         }
 
-        publishBtn.innerText = "UPLOADING...";
-        publishBtn.disabled = true;
+        btn.innerText = "SAVING..."; btn.disabled = true;
 
         try {
-            let uploadedImages = [];
-            for (let file of selectedImageFiles) {
-                const url = await uploadToCloudinary(file);
-                uploadedImages.push(url);
+            let images = [...existingImages];
+            for (let i = 0; i < 3; i++) { 
+                if (selectedImageFiles[i]) images[i] = await upload(selectedImageFiles[i]); 
+            }
+            
+            let vUrl = existingVideo;
+            const vFile = document.getElementById('mainVid').files[0];
+            if (vFile) vUrl = await upload(vFile);
+
+            let sumoFees = {};
+            document.querySelectorAll('.dist-input').forEach(i => { if(i.value) sumoFees[i.getAttribute('data-d')] = Number(i.value); });
+
+            let opts = [];
+            document.querySelectorAll('.group-card').forEach(card => {
+                const labelInp = card.querySelector('.g-label');
+                if (labelInp) {
+                    const label = labelInp.value;
+                    const vals = Array.from(card.querySelectorAll('.g-value')).map(v => v.value).filter(v => v);
+                    if(label && vals.length) opts.push({ label, options: vals });
+                }
+            });
+
+            const productData = {
+                userId: firebase.auth().currentUser.uid,
+                storeName: globalSellerData.storeName || "Shop",
+                whatsapp: globalSellerData.whatsapp || "",
+                upiId: globalSellerData.upiId || "",
+                sellerDistrict: globalSellerData.sellerDistrict || "Mizoram",
+                name: name,
+                price: price,
+                mrp: Number(document.getElementById('pMRP').value) || price,
+                stock: Number(document.getElementById('pStock').value) || 0,
+                description: document.getElementById('pDesc').value,
+                mainCategory: selectedCategory,
+                subcategory: selectedSubcategory,
+                isPhysical: document.getElementById('typePhys').classList.contains('active'),
+                localDelivery: Number(document.getElementById('pDelivery').value) || 0,
+                outsideDeliveryMode: document.getElementById('outsideOption').value,
+                sumoDelivery: sumoFees,
+                imageURL: images[0] || "",
+                allImages: images.filter(img => img),
+                video: vUrl,
+                interactiveOptions: opts,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (isEditMode) {
+                await db.collection("products").doc(editId).update(productData);
+            } else {
+                productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection("products").add(productData);
             }
 
-            let videoUrl = "";
-            if (vidFile) videoUrl = await uploadToCloudinary(vidFile);
-
-            let interactiveOptions = [];
-            document.querySelectorAll('.group-card').forEach(card => {
-                const label = card.querySelector('.g-label').value;
-                const options = [];
-                card.querySelectorAll('.g-value').forEach(v => { if(v.value) options.push(v.value); });
-                if(label && options.length > 0) interactiveOptions.push({ label, options });
-            });
-
-            // UPDATED: Now saving subcategory separately to allow homepage filtering
-            await db.collection("products").add({
-                name: pName,
-                categoryPath: selectedSubcategory ? selectedCategory + " - " + selectedSubcategory : selectedCategory, 
-                mainCategory: selectedCategory,    // Split field for better search
-                subcategory: selectedSubcategory,  // Split field for better search
-                price: currentPrice,
-                oldPrice: originalPrice, 
-                discount: discountAmt,
-                delivery: Number(document.getElementById('pDelivery').value) || 0,
-                description: document.getElementById('pDesc').value,
-                imageURL: uploadedImages[0], 
-                allImages: uploadedImages, 
-                video: videoUrl,
-                interactiveOptions: interactiveOptions,
-                serialNumber: Date.now(),
-                sectionTag: "trending",
-                isFeatured: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            showModal();
-
-        } catch (error) {
-            alert("Error: " + error.message);
-            publishBtn.innerText = "Publish to Zobuy";
-            publishBtn.disabled = false;
+            document.getElementById('successModal').classList.remove('hidden');
+        } catch (e) {
+            alert("Error: " + e.message);
+            btn.innerText = isEditMode ? "UPDATE PRODUCT" : "Publish to Zobuy"; btn.disabled = false;
         }
     }
-    window.onload = addGroup;
+
+    function setProductType(t) {
+        const isP = t === 'physical';
+        document.getElementById('physicalSection').style.display = isP ? 'block' : 'none';
+        document.getElementById('typePhys').classList.toggle('active', isP);
+        document.getElementById('typeDigi').classList.toggle('active', !isP);
+    }
+
+    function updateDeliveryUI() {
+        document.getElementById('districtContainer').classList.toggle('hidden', document.getElementById('outsideOption').value !== 'personal');
+    }
 </script>
 </body>
 </html>

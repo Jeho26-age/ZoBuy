@@ -12,7 +12,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
         return; 
     }
 
-    const isInternalAuthPage = ["account.html", "signin.html", "createaccount.html", "gateway.html"].includes(currentPage);
+    const isInternalAuthPage = ["account.html", "signin.html", "createaccount.html", "gateway.html", "store-setup.html"].includes(currentPage);
     if (isInternalAuthPage) return;
 
     if (currentPage === "store.html" || currentPage === "item.html") {
@@ -26,39 +26,63 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
             const userData = userDoc.data();
 
-            // 1. If hasPlan is already false, stop here.
+            // 1. If plan is false, kick them out
             if (userData.hasPlan === false) {
                 window.location.href = "gateway.html";
                 return;
             }
 
-            // 2. Date Validation Logic
-            const now = Date.now();
-            
-            // Safety: If there is no expiry date string at all
-            if (!userData.planExpiry) {
-                console.warn("No expiry date found. Plan remains active for now.");
-                return; 
+            // 2. Plan Calculation & String Generation
+            if (userData.planExpiry) {
+                const now = new Date();
+                const expiryDate = new Date(userData.planExpiry);
+                const joinedDate = userData.joinedAt ? new Date(userData.joinedAt) : now;
+                
+                // Calculate total duration in days
+                const diffTime = Math.abs(expiryDate - joinedDate);
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+                // Determine what the name SHOULD be
+                let targetName = "";
+                if (diffDays !== 28) {
+                    targetName = "Admin Plan (Testing)";
+                } else {
+                    // Use existing name (Bronze/Silver/Elite) or default to Pro
+                    targetName = userData.planName || "Pro Seller Plan";
+                }
+
+                // SYNC STEP: If the string is missing in Firestore, write it now
+                if (userData.planName !== targetName) {
+                    await db.collection("user_data").doc(user.uid).update({
+                        planName: targetName
+                    });
+                }
+
+                // 3. Expiry Kill Switch
+                if (now > expiryDate) {
+                    await db.collection("user_data").doc(user.uid).update({
+                        hasPlan: false,
+                        planName: "Expired"
+                    });
+                    window.location.href = "gateway.html";
+                    return;
+                }
+
+                // 4. Update UI if elements exist on the page
+                const remainingDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                if (document.getElementById('planDisplay')) {
+                    document.getElementById('planDisplay').innerText = targetName;
+                }
+                if (document.getElementById('daysLeft')) {
+                    document.getElementById('daysLeft').innerText = remainingDays + " days left";
+                }
+
             }
 
-            const expiryDate = new Date(userData.planExpiry);
-            const expiryTime = expiryDate.getTime();
-
-            // 3. The "Invalid Date" Protection
-            // If the date format is wrong, DO NOT reset to false. Just log it.
-            if (isNaN(expiryTime)) {
-                console.error("Firebase planExpiry format is wrong! Update it to an ISO string.");
-                return; 
-            }
-
-            // 4. THE KILL SWITCH
-            // Only runs if the date is valid AND it is truly in the past.
-            if (now > expiryTime) {
-                console.log("Plan expired. Moving to false...");
-                await db.collection("user_data").doc(user.uid).update({
-                    hasPlan: false
-                });
-                window.location.href = "gateway.html";
+            // 5. Store Setup Check
+            if (!userData.storeName || !userData.upiId) {
+                window.location.href = "store-setup.html";
+                return;
             }
 
         } catch (error) {

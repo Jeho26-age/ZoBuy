@@ -73,7 +73,8 @@
         <img src="logo.png" alt="Zobuy" class="logo-small">
         <div class="search-container">
             <i class="fa fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search Zobuy">
+<input type="text" id="searchInput" placeholder="Search Zobuy" onkeypress="if(event.key === 'Enter') handleSearch()">
+
         </div>
     </header>
 
@@ -128,43 +129,61 @@
 
 <script>
     async function init() {
-        const params = new URLSearchParams(window.location.search);
-        const filterValue = params.get('filter');
+    const params = new URLSearchParams(window.location.search);
+    const filterValue = params.get('filter');
+    const searchValue = params.get('search'); // Added this
 
-        if (filterValue) {
-            // If filtering, hide everything else and show results
-            document.getElementById('banner-section').style.display = 'none';
-            await renderFilteredResults(filterValue);
-        } else {
-            loadBanners();
-            loadSections();
-        }
+    if (searchValue) {
+        // If user typed in the search bar
+        await renderSearchResults(searchValue.toLowerCase());
+    } else if (filterValue) {
+        // If user clicked a category
+        document.getElementById('banner-section').style.display = 'none';
+        await renderFilteredResults(filterValue);
+    } else {
+        // Default home view
+        loadBanners();
+        loadSections();
     }
+}
 
-    async function renderFilteredResults(filterValue) {
-        document.getElementById('filter-container').classList.remove('hidden-section');
-        document.getElementById('filter-title').innerText = "Results for: " + filterValue;
-        const grid = document.getElementById('filter-grid');
+async function renderFilteredResults(filterValue) {
+    document.getElementById('banner-section').style.display = 'none';
+    document.getElementById('filter-container').classList.remove('hidden-section');
+    
+    const cleanFilter = decodeURIComponent(filterValue).toLowerCase();
+    document.getElementById('filter-title').innerText = "Category: " + filterValue;
+    
+    const grid = document.getElementById('filter-grid');
+    grid.innerHTML = ''; 
 
-        // Logic: Matches "categoryPath" starting with the filter string
-        // This handles "Women Fashion" finding "Women Fashion - Handbag"
-        const snapshot = await db.collection("products")
-            .where("categoryPath", ">=", filterValue)
-            .where("categoryPath", "<=", filterValue + "\uf8ff")
-            .get();
+    try {
+        // Fetch products and filter by the correct Firestore field: mainCategory
+        const snapshot = await db.collection("products").get();
 
-        if (snapshot.empty) {
-            grid.innerHTML = `<p style="padding:20px; color:#888;">No items found.</p>`;
-            return;
-        }
-
+        let found = false;
         snapshot.forEach(doc => {
-            grid.innerHTML += generateCardHTML(doc.id, doc.data());
+            const data = doc.data();
+            // Pointing to 'mainCategory' as seen in your screenshot
+            const categoryData = (data.mainCategory || "").toLowerCase();
+            
+            // Check if your sub-category exists inside the mainCategory string
+            if (categoryData.includes(cleanFilter)) {
+                grid.innerHTML += generateCardHTML(doc.id, data);
+                found = true;
+            }
         });
+
+        if (!found) {
+            grid.innerHTML = `<p style="padding:20px; color:#888;">No items found in ${filterValue}.</p>`;
+        }
+    } catch (error) {
+        console.error("Filter Error:", error);
     }
+}
+
 
     async function loadSections() {
-        // Updated to use 'sectionTag' field as per your Firestore structure
         const sections = [
             { q: db.collection("products").where("sectionTag", "==", "foryou"), g: "foryou-grid", c: "foryou-container" },
             { q: db.collection("products").orderBy("createdAt", "desc").limit(8), g: "new-grid", c: "new-container" },
@@ -185,25 +204,35 @@
         }
     }
 
+    // --- FIXED CALCULATION LOGIC ---
     function generateCardHTML(id, data) {
-        const discount = data.oldPrice ? Math.round(((data.oldPrice - data.price) / data.oldPrice) * 100) : 0;
-        return `
-            <div class="product-card" onclick="window.location.href='item-view.html?id=${id}'">
-                ${discount > 0 ? `<div class="discount-tag">${discount}% OFF</div>` : ''}
-                <div class="product-image">
-                    <img src="${data.imageURL || data.image || 'placeholder.png'}" alt="${data.name}">
-                </div>
-                <div class="product-info">
-                    <div class="product-name">${data.name}</div>
-                    <div class="price-container">
-                        <span class="new-price">₹${data.price}</span>
-                        ${data.oldPrice ? `<span class="old-price">₹${data.oldPrice}</span>` : ''}
-                    </div>
+    // 1. Point the code to the CORRECT Firestore fields
+    const sellingPrice = Number(data.price) || 0; // This is the 500
+    const originalMrp = Number(data.mrp) || 0;    // This is the 4000
+    
+    // 2. Calculation: (4000 - 500) / 4000 = 87.5%
+    let discountPercentage = 0;
+if (originalMrp > 0) {
+    discountPercentage = Math.round((sellingPrice / originalMrp) * 100);
+}
+
+
+    return `
+        <div class="product-card" onclick="window.location.href='item-view.html?id=${id}'">
+            ${discountPercentage > 0 ? `<div class="discount-tag">${discountPercentage}% OFF</div>` : ''}
+            <div class="product-image">
+                <img src="${data.imageURL || data.image || 'placeholder.png'}" alt="${data.name}">
+            </div>
+            <div class="product-info">
+                <div class="product-name">${data.name}</div>
+                <div class="price-container">
+                    <span class="new-price">₹${sellingPrice}</span>
+                    ${originalMrp > sellingPrice ? `<span class="old-price">₹${originalMrp}</span>` : ''}
                 </div>
             </div>
-        `;
-    }
-
+        </div>
+    `;
+}
     async function loadBanners() {
         const bannerContainer = document.getElementById('promoBanner');
         const snap = await db.collection("banners").get();
@@ -219,6 +248,52 @@
     }
 
     init();
+    // Function 1: Detects search and redirects if on Home, or filters if already on Results
+async function handleSearch() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!query) return;
+
+    // Redirect to the same page with a search param (standard behavior)
+    window.location.href = `homepage.html?search=${encodeURIComponent(query)}`;
+}
+
+// Function 2: The actual search logic to be called inside init()
+async function renderSearchResults(query) {
+    document.getElementById('banner-section').style.display = 'none';
+    const sections = ['foryou', 'new', 'discount', 'trending', 'best'];
+    sections.forEach(s => document.getElementById(s + '-container').style.display = 'none');
+    
+    document.getElementById('filter-container').classList.remove('hidden-section');
+    const title = document.getElementById('filter-title');
+    const grid = document.getElementById('filter-grid');
+    
+    title.innerText = `Searching for: "${query}"`;
+    grid.innerHTML = '<p class="p-5 text-gray-400">Searching...</p>';
+
+    try {
+        const snapshot = await db.collection("products").get();
+        grid.innerHTML = ''; // Clear "Searching..."
+        
+        let found = false;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const name = (data.name || "").toLowerCase();
+            const cat = (data.categoryPath || "").toLowerCase();
+            // Checking if query exists in name or category
+            if (name.includes(query) || cat.includes(query)) {
+                grid.innerHTML += generateCardHTML(doc.id, data);
+                found = true;
+            }
+        });
+
+        if (!found) {
+            grid.innerHTML = `<p class="p-5 text-gray-400">No results found for "${query}"</p>`;
+        }
+    } catch (error) {
+        console.error("Search Error:", error);
+    }
+}
+
 </script>
 </body>
 </html>
