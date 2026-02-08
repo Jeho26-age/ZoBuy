@@ -112,6 +112,7 @@ const categoryData = [
             { name: "Side Tables", img: "sidetables.png" },
             {name: "sofa", img:
             "sofajpg" },
+            {name: "wardrobe", img :"wardrobe.jpg" },
         
         ]
     },
